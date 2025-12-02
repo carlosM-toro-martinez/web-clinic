@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colores de fondo */
+  --color-background: #f9fbfc; /* fondo principal */
+  --color-card: #ffffff; /* fondo de tarjetas */
+
+  /* Colores de borde */
+  --color-border: #e6ecf1; /* bordes suaves */
+
+  /* Colores de texto */
+  --color-text-primary: #0f172a; /* títulos */
+  --color-text-secondary: #374151; /* etiquetas */
+  --color-text-subtle: #6b7280; /* descripciones */
+  --color-text-placeholder: #9ca3af;
+
+  /* Colores primarios */
+  --color-primary: #2563eb; /* azul clínico */
+  --color-primary-hover: #1e4fd8;
+
+  /* Otros colores que puedas necesitar */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-primary: #13a4ec;
+  --color-primary-600: #0f95d7;
+  --color-background: #f6f7f8;
+  --color-surface: #ffffff;
+  --color-surface-variant: #f2f4f6;
+  --color-border: #e6ebef;
+  --text-primary: #0f172a;
+  --text-muted: #6b7280;
+  --success: #10b981;
+  --danger: #ef4444;
+  --card-radius: 0.75rem;
+  --font-sans: "Manrope", sans-serif;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --color-accent-blue-light: rgba(19, 164, 236, 0.08);
+  --color-accent-red-light: rgba(239, 68, 68, 0.08);
+}
+
+@utility container {
+  @apply mx-auto px-4 max-w-7xl;
+}
+
+.btn-primary {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold shadow-sm transition;
+  background-color: var(--color-primary);
+}
+.btn-primary:hover {
+  background-color: var(--color-primary-600);
+}
+
+/* card base */
+.card {
+  @apply bg-white p-6 rounded-[var(--card-radius)] border;
+  border-color: var(--color-border);
+}
+
+/* subtle card for sidebar highlight */
+.sidebar-item {
+  @apply flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700;
+}
+.sidebar-item--active {
+  background-color: rgba(19, 164, 236, 0.08); /* primary / 10 */
+  color: var(--color-primary);
+}
+
+/* tabs */
+.tab-active {
+  border-bottom-width: 2px;
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
+  @apply font-semibold py-4 px-1;
+}
+
+/* badges */
+.badge-income {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  background-color: #ecfdf5; /* light green */
+  color: #065f46;
+}
+.badge-expense {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  background-color: #fff1f2; /* light red */
+  color: #7f1d1d;
+}
+
+/* table adjustments */
+.table-head {
+  @apply bg-gray-50;
+}
+.table-row + .table-row {
+  /* separated rows feel */
+}
+
+/* focus for inputs */
+.input-focus:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(19, 164, 236, 0.12);
+  border-color: var(--color-primary);
+}
+
+/* small helpers */
+.avatar-lg {
+  width: 96px;
+  height: 96px;
+  border-radius: 9999px;
+}
+
+/* dark mode compatibility (if using .dark on body) */
+.dark body {
+  background-color: var(--color-background);
+}
+.dark .card {
+  @apply bg-[#0f172a] text-white;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.input {
+  @apply w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)]
+    px-4 py-3 text-[color:var(--color-text-primary)]
+    placeholder:text-[color:var(--color-text-placeholder)]
+    focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]
+    focus:border-[var(--color-primary)] transition;
+}
+
+:root {
+  --color-success: #10b981;
+  --color-success-light: #d1fae5;
+  --color-info: #3b82f6;
+  --color-info-light: #dbeafe;
+  --color-primary-light: #e0e7ff;
+}
