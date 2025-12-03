@@ -9,7 +9,6 @@ export default function PaymentForm({
   refetchAppointments,
 }) {
   const { cajaResponse, user } = useContext(MainContext);
-  console.log(cajaResponse?.data?.id);
 
   const [reservationAmount, setReservationAmount] = useState(
     appointment.reservationAmount || ""
@@ -56,7 +55,6 @@ export default function PaymentForm({
         type: "INCOME",
         userId: user?.id,
       };
-      console.log("Sending update payload:", updatePayload);
 
       await onSubmit(updatePayload);
       refetchAppointments();

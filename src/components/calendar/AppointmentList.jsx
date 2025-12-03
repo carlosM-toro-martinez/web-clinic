@@ -3,7 +3,7 @@ import ModalPayment from "./ModalPayment";
 import PaymentForm from "./PaymentForm";
 import appointmentUpdateService from "../../async/services/put/appointmentUpdateService";
 import useApiMutation from "../../hocks/useApiMutation";
-
+import medic from "../../assets/images/medic.png";
 const AppointmentList = ({
   filteredAppointments,
   formattedDate,
@@ -24,7 +24,12 @@ const AppointmentList = ({
   };
 
   const { mutate, isPending, message, type, reset } = useApiMutation(
-    appointmentUpdateService
+    appointmentUpdateService,
+    {
+      onSuccess: () => {
+        refetchAppointments();
+      },
+    }
   );
 
   const updateAppointment = (payload) => {
@@ -123,7 +128,7 @@ const AppointmentCard = ({ appointment, onClick }) => {
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <img
-            src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png"
+            src={medic}
             alt={appointment.doctor?.firstName}
             className="w-8 h-8 rounded-full object-cover border border-white"
           />
@@ -187,19 +192,6 @@ const AppointmentCard = ({ appointment, onClick }) => {
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1 text-xs text-[color:var(--color-text-subtle)]">
-          <svg
-            className="w-3 h-3"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
           {formattedTime}
         </div>
 

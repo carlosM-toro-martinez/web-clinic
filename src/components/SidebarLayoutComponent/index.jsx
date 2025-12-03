@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import logo from "../../assets/images/Logo.png";
+import { useLogout } from "../../hocks/useLogout";
 
 const menuItems = [
   { label: "Dashboard", path: "/", icon: LayoutDashboard },
@@ -28,6 +29,7 @@ const menuItems = [
 ];
 
 function SidebarLayoutComponent() {
+  const { logout } = useLogout();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
@@ -215,6 +217,7 @@ function SidebarLayoutComponent() {
               transition-all duration-200
               ${collapsed ? "justify-center" : ""}
             `}
+            onClick={logout}
           >
             <LogOut
               size={20}
@@ -236,35 +239,6 @@ function SidebarLayoutComponent() {
             )}
           </button>
         </div>
-        {/* <div className="hidden md:block border-t border-[var(--color-border)] px-4 py-3">
-          <div
-            className={`
-            flex items-center justify-between
-            text-xs text-[var(--color-text-subtle)]
-            transition-all duration-200
-            ${collapsed ? "justify-center" : ""}
-          `}
-          >
-            {!collapsed && <span>Contraído</span>}
-            <div
-              className={`
-              relative w-8 h-4 rounded-full transition-all duration-300
-              ${
-                collapsed
-                  ? "bg-[var(--color-primary)]"
-                  : "bg-[var(--color-border)]"
-              }
-            `}
-            >
-              <div
-                className={`
-                absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300
-                ${collapsed ? "left-0.5" : "left-4.5"}
-              `}
-              />
-            </div>
-          </div>
-        </div> */}
       </aside>
       <div className="md:hidden h-16" />
     </>

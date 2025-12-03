@@ -134,13 +134,13 @@ function HeaderComponent() {
               </div>
 
               <div className="py-2">
-                <button
+                {/* <button
                   onClick={() => setIsDropdownOpen(false)}
                   className="flex cursor-pointer items-center gap-3 w-full px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-variant)] hover:text-[var(--color-primary)] transition-colors duration-150"
                 >
                   <User size={18} />
                   <span>Mi perfil</span>
-                </button>
+                </button> */}
 
                 {/* <button
                   onClick={() => setIsDropdownOpen(false)}
@@ -151,7 +151,7 @@ function HeaderComponent() {
                 </button> */}
               </div>
 
-              <div className="border-t border-[var(--color-border)] my-2"></div>
+              {/* <div className="border-t border-[var(--color-border)] my-2"></div>
 
               <button
                 onClick={handleLogout}
@@ -159,7 +159,7 @@ function HeaderComponent() {
               >
                 <LogOut size={18} />
                 <span>Cerrar sesión</span>
-              </button>
+              </button> */}
             </div>
           )}
         </div>

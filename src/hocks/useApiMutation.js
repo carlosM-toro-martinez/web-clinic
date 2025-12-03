@@ -12,6 +12,8 @@ export default function useApiMutation(apiFunction, options = {}) {
 
   const mutation = useMutation({
     mutationFn: async (payload) => {
+      console.log(idEdit);
+
       const response = await apiFunction(
         payload,
         token,

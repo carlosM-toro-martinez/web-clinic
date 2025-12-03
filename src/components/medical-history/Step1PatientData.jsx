@@ -25,7 +25,7 @@ const Step1PatientData = ({
           <div>
             <span className="text-gray-600">Especialidad: </span>
             <span className="font-medium">
-              {specialty?.name || "No especificada"}
+              {toTitleCase(specialty?.name) || "No especificada"}
             </span>
           </div>
           <div>

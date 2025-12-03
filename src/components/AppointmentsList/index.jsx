@@ -154,6 +154,30 @@ const AppointmentCard = ({ appointment, navigate, isToday }) => {
     }
   };
 
+  const handleOpenConsulta = (viewOnly = false) => {
+    // 1. Abrir nueva pestaña con /consultas/crear
+    const state = {
+      specialtyId: appointment.specialtyId,
+      doctorId: appointment.doctorId,
+      patientId: appointment.patientId,
+      patient: appointment.patient,
+      specialty: appointment.specialty,
+      doctor: appointment.doctor,
+      appointmentsId: appointment.id,
+      ...(viewOnly ? { viewOnly: true } : {}),
+    };
+
+    // Abrir nueva pestaña
+    window.open(`/pacientes/${appointment.patient.id}/historia`);
+
+    // 2. En la ventana actual, navegar a historia del paciente
+    if (appointment.patient?.id) {
+      navigate(`/consultas/crear`, { state });
+    } else if (appointment.patientId) {
+      navigate(`/consultas/crear`, { state });
+    }
+  };
+
   const statusStyles = getStatusStyles(appointment.status);
 
   return (
@@ -237,7 +261,6 @@ const AppointmentCard = ({ appointment, navigate, isToday }) => {
         </div>
       )}
 
-      {/* Botón de acción */}
       <div className="flex justify-center">
         {appointment.status === "COMPLETED" ? (
           <div className="text-center">
@@ -245,20 +268,7 @@ const AppointmentCard = ({ appointment, navigate, isToday }) => {
               ✅ Consulta Realizada
             </div>
             <button
-              onClick={() =>
-                navigate("/consultas/crear", {
-                  state: {
-                    specialtyId: appointment.specialtyId,
-                    doctorId: appointment.doctorId,
-                    patientId: appointment.patientId,
-                    patient: appointment.patient,
-                    specialty: appointment.specialty,
-                    doctor: appointment.doctor,
-                    appointmentsId: appointment.id,
-                    viewOnly: true, // Indicar que es solo para ver
-                  },
-                })
-              }
+              onClick={() => handleOpenConsulta(true)}
               className="text-blue-600 text-sm font-medium hover:text-blue-800 transition cursor-pointer"
             >
               Ver detalles de consulta
@@ -266,19 +276,7 @@ const AppointmentCard = ({ appointment, navigate, isToday }) => {
           </div>
         ) : (
           <button
-            onClick={() =>
-              navigate("/consultas/crear", {
-                state: {
-                  specialtyId: appointment.specialtyId,
-                  doctorId: appointment.doctorId,
-                  patientId: appointment.patientId,
-                  patient: appointment.patient,
-                  specialty: appointment.specialty,
-                  doctor: appointment.doctor,
-                  appointmentsId: appointment.id,
-                },
-              })
-            }
+            onClick={() => handleOpenConsulta(false)}
             className={`px-6 py-3 text-lg font-semibold rounded-xl cursor-pointer transition ${
               isToday
                 ? "bg-green-500 hover:bg-green-600 text-white"

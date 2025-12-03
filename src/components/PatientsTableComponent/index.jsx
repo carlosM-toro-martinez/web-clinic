@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MoreVertical } from "lucide-react";
+import toTitleCase from "../../utils/toTitleCase";
 
 export default function PatientsTable({ patients }) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -118,13 +119,14 @@ export default function PatientsTable({ patients }) {
 
           <tbody>
             {filteredPatients.length > 0 ? (
-              filteredPatients.map((p) => (
+              filteredPatients?.map((p) => (
                 <tr
                   key={p.id}
                   className="border-t border-[var(--color-border)] hover:bg-[var(--color-hover-light)] transition relative"
                 >
                   <td className="p-4 text-[color:var(--color-text-primary)] font-medium">
-                    {p.firstName} {p.lastName}
+                    {toTitleCase(p?.firstName ? p?.firstName : "")}{" "}
+                    {toTitleCase(p.lastName ? p.lastName : "")}
                   </td>
                   <td className="p-4 text-[color:var(--color-text-secondary)]">
                     {p.ciNumber}

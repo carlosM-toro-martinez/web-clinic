@@ -16,7 +16,11 @@ function Consultas() {
   } = useQuery({
     queryKey: ["doctorsAppointments"],
     queryFn: () =>
-      doctorsAppointmentsService("fb40d811-5d0b-4865-9fe9-e9b57c786174"),
+      doctorsAppointmentsService(
+        user.role === "DOCTOR" || user.role === "ADMIN"
+          ? user.id
+          : "fb40d811-5d0b-4865-9fe9-e9b57c786174"
+      ),
 
     //queryFn: () => doctorsAppointmentsService(user.id),
   });

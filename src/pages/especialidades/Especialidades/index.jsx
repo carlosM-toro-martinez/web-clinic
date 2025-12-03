@@ -11,6 +11,7 @@ function Especialidades() {
     isLoading: isLoadingDoctors,
     isError: isErrorDoctors,
     error: errorDoctors,
+    refetch: refetchDoctors,
   } = useQuery({
     queryKey: ["doctors"],
     queryFn: doctorsService,
@@ -21,6 +22,7 @@ function Especialidades() {
     isLoading: isLoadingSpecialties,
     isError: isErrorSpecialties,
     error: errorSpecialties,
+    refetch: refetchSpecialties,
   } = useQuery({
     queryKey: ["specialties"],
     queryFn: specialtiesService,
@@ -53,12 +55,20 @@ function Especialidades() {
       </LayoutComponent>
     );
   }
+  const onUpdate = () => {
+    refetchDoctors();
+    refetchSpecialties();
+  };
 
   const doctors = doctorsResponse?.data || [];
   const specialties = specialtiesResponse?.data || [];
   return (
     <LayoutComponent>
-      <SpecialtiesComponent doctors={doctors} specialties={specialties} />
+      <SpecialtiesComponent
+        doctors={doctors}
+        specialties={specialties}
+        onUpdate={onUpdate}
+      />
     </LayoutComponent>
   );
 }
