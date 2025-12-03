@@ -46,7 +46,7 @@ export default function FeeForm({
     // Validar todos los fees
     const validFees = fees.filter((f) => {
       const amount = parseFloat(f.amount);
-      return !isNaN(amount) && amount > 0 && f.description.trim();
+      return !isNaN(amount) && amount > 0;
     });
 
     if (validFees.length === 0) {
@@ -54,15 +54,13 @@ export default function FeeForm({
       return;
     }
 
-    // Preparar array para enviar
     const feesToSend = validFees.map((f) => ({
       feeType: f.feeType,
       amount: parseFloat(f.amount),
-      description: f.description.trim(),
+      description: f.description === "" ? "." : f.description.trim(),
     }));
-    console.log(feesToSend);
 
-    onSubmit(feesToSend); // Enviamos ARRAY
+    onSubmit(feesToSend);
   };
 
   const getTotalAmount = () => {
@@ -129,11 +127,10 @@ export default function FeeForm({
               </select>
 
               <div className="relative">
-                <span className="absolute left-3 top-2 text-gray-500">Bs.</span>
                 <input
                   type="text"
                   className="input text-sm pl-10"
-                  placeholder="0.00"
+                  placeholder="0.00 Bs"
                   value={fee.amount}
                   onChange={(e) =>
                     handleFeeChange(index, "amount", e.target.value)
@@ -158,9 +155,6 @@ export default function FeeForm({
                 (!parseFloat(fee.amount) || parseFloat(fee.amount) <= 0) && (
                   <span className="text-red-500">Monto inválido</span>
                 )}
-              {fee.description && !fee.description.trim() && (
-                <span className="text-red-500">Descripción requerida</span>
-              )}
             </div>
           </div>
         ))}
@@ -181,12 +175,8 @@ export default function FeeForm({
         <div className="flex justify-between items-center">
           <span className="text-sm text-gray-600">Tarifas válidas:</span>
           <span className="font-semibold text-blue-700">
-            {
-              fees.filter(
-                (f) => parseFloat(f.amount) > 0 && f.description.trim()
-              ).length
-            }{" "}
-            de {fees.length}
+            {fees.filter((f) => parseFloat(f.amount) > 0).length} de{" "}
+            {fees.length}
           </span>
         </div>
       </div>
@@ -197,17 +187,14 @@ export default function FeeForm({
           type="submit"
           disabled={
             isSubmitting ||
-            fees.filter((f) => parseFloat(f.amount) > 0 && f.description.trim())
-              .length === 0
+            fees.filter((f) => parseFloat(f.amount) > 0).length === 0
           }
           className="btn-primary text-sm px-4 py-2 flex-1"
         >
           {isSubmitting
             ? "Guardando..."
             : `Agregar ${
-                fees.filter(
-                  (f) => parseFloat(f.amount) > 0 && f.description.trim()
-                ).length
+                fees.filter((f) => parseFloat(f.amount) > 0).length
               } tarifa(s)`}
         </button>
         {onCancel && (

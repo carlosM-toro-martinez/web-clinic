@@ -159,10 +159,8 @@ export default function SpecialtyCard({ specialty, doctors, onUpdate }) {
         </div>
       </div>
 
-      {/* Contenido expandido */}
       {expanded && (
         <div className="mt-6 border-t pt-6 animate-fadeIn space-y-8">
-          {/* Mensajes */}
           {currentMessage && (
             <AlertMessage
               message={currentMessage}
@@ -171,7 +169,6 @@ export default function SpecialtyCard({ specialty, doctors, onUpdate }) {
             />
           )}
 
-          {/* Tarifas */}
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
@@ -197,7 +194,6 @@ export default function SpecialtyCard({ specialty, doctors, onUpdate }) {
               )}
             </div>
 
-            {/* Lista de tarifas existentes */}
             {specialty.fees.length > 0 ? (
               <div className="grid md:grid-cols-2 gap-3 mb-4">
                 {specialty.fees.map((fee) => (
@@ -223,9 +219,6 @@ export default function SpecialtyCard({ specialty, doctors, onUpdate }) {
                           {fee.description}
                         </p>
                       </div>
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        {fee.feeType}
-                      </span>
                     </div>
                   </div>
                 ))}
