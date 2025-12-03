@@ -27,15 +27,15 @@ export const calculateMetrics = (appointmentsData, cashRegisterData) => {
       color: "text-blue-500",
       trend: 12,
     },
-    {
-      id: 2,
-      title: "Ingresos del Día",
-      value: `${totalIncome} BOB`,
-      subtitle: "Total recaudado",
-      icon: "💰",
-      color: "text-green-500",
-      trend: 8,
-    },
+    // {
+    //   id: 2,
+    //   title: "Ingresos del Día",
+    //   value: `${totalIncome} BOB`,
+    //   subtitle: "Total recaudado",
+    //   icon: "💰",
+    //   color: "text-green-500",
+    //   trend: 8,
+    // },
     {
       id: 3,
       title: "Pacientes Atendidos",
@@ -45,16 +45,16 @@ export const calculateMetrics = (appointmentsData, cashRegisterData) => {
       color: "text-purple-500",
       trend: 15,
     },
-    {
-      id: 4,
-      title: "Caja Actual",
-      value: `${cashRegister?.actualAmount || 0} BOB`,
-      subtitle:
-        cashRegister?.status === "OPEN" ? "Caja abierta" : "Caja cerrada",
-      icon: "💼",
-      color: "text-orange-500",
-      trend: null,
-    },
+    // {
+    //   id: 4,
+    //   title: "Caja Actual",
+    //   value: `${cashRegister?.actualAmount || 0} BOB`,
+    //   subtitle:
+    //     cashRegister?.status === "OPEN" ? "Caja abierta" : "Caja cerrada",
+    //   icon: "💼",
+    //   color: "text-orange-500",
+    //   trend: null,
+    // },
   ];
 };
 

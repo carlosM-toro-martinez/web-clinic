@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import LayoutComponent from "../../../components/LayoutComponent";
 import CajaHeaderComponent from "../../../components/CajaHeaderComponent";
 import CajaResumenComponent from "../../../components/CajaResumenComponent";
@@ -10,23 +10,20 @@ import BackArrow from "../../../components/common/BackArrow";
 import { Plus } from "lucide-react";
 import AperturaCajaModal from "../../../components/AperturaCajaModal.jsx";
 import useApiMutation from "../../../hocks/useApiMutation.js";
+import { MainContext } from "../../../context/MainContext.js";
 
 function Caja() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const {
-    data: response,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["cashRegister"],
-    queryFn: cashRegisterService,
-  });
+  const { cashRegister, refetchCaja, setCashRegister } =
+    useContext(MainContext);
 
   const { mutate, isPending, message, type, reset } = useApiMutation(
-    createCashRegisterService
+    createCashRegisterService,
+    {
+      onSuccess: (data) => {
+        refetchCaja();
+      },
+    }
   );
 
   const handleOpenModal = () => {
@@ -41,17 +38,7 @@ function Caja() {
     mutate(payload);
   };
 
-  if (isLoading) {
-    return (
-      <LayoutComponent>
-        <div className="flex justify-center items-center h-64 text-[var(--color-text-secondary)]">
-          Cargando Caja...
-        </div>
-      </LayoutComponent>
-    );
-  }
-
-  if (isError) {
+  if (cashRegister === null || cashRegister.data.length === 0) {
     return (
       <LayoutComponent>
         <div className="min-h-screen flex font-sans bg-[var(--color-background)] text-[var(--text-primary)]">
@@ -79,13 +66,13 @@ function Caja() {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           onSubmit={handleSubmitApertura}
-          refetch={refetch}
+          refetch={refetchCaja}
         />
       </LayoutComponent>
     );
   }
 
-  const lastCashRegister = response?.data || [];
+  const lastCashRegister = cashRegister?.data || [];
 
   return (
     <LayoutComponent>
@@ -95,7 +82,8 @@ function Caja() {
             cashRegisterId={lastCashRegister.id}
             lastCashRegister={lastCashRegister}
             actualAmount={lastCashRegister?.actualAmount}
-            refetch={refetch}
+            refetch={refetchCaja}
+            setCashRegister={setCashRegister}
           />
           <CajaResumenComponent lastCash={lastCashRegister} />
           <CajaMovimientosComponent movements={lastCashRegister?.movements} />

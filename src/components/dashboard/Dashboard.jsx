@@ -22,13 +22,12 @@ function Dashboard() {
     return <LoadingSpinner />;
   }
 
-  if (isError) {
-    return <ErrorMessage error={error} />;
-  }
+  // if (isError) {
+  //   return <ErrorMessage error={error} />;
+  // }
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-[color:var(--color-text-primary)]">
           Inicio
@@ -38,22 +37,15 @@ function Dashboard() {
         </p>
       </div>
 
-      {/* Métricas Principales */}
-      <MetricsGrid metrics={metrics} />
-
-      {/* Grid Principal */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Columna 1: Citas del Día */}
         <div className="lg:col-span-2 space-y-6">
           <TodayAppointments appointments={todayAppointments} />
-          <CashFlowChart data={cashRegisterData} />
         </div>
+        <MetricsGrid metrics={metrics} />
 
-        {/* Columna 2: Caja y Movimientos */}
-        <div className="space-y-6">
-          <CashRegisterSummary data={cashRegisterData} />
+        {/* <div className="space-y-6">
           <RecentMovements movements={cashRegisterData?.movements || []} />
-        </div>
+        </div> */}
       </div>
     </div>
   );

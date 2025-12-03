@@ -7,6 +7,7 @@ export default function CajaHeaderComponent({
   cashRegisterId,
   actualAmount,
   refetch,
+  setCashRegister,
 }) {
   const navigate = useNavigate();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -14,14 +15,10 @@ export default function CajaHeaderComponent({
     cashCloseService,
     {
       onSuccess: (data) => {
-        setTimeout(() => {
-          setShowConfirmModal(false);
-          reset();
-        }, 1000);
-
-        setTimeout(() => {
-          refetch();
-        }, 200);
+        setCashRegister(null);
+        refetch();
+        setShowConfirmModal(false);
+        reset();
       },
     }
   );

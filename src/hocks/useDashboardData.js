@@ -1,15 +1,16 @@
 // src/hooks/useDashboardData.js
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useContext, useMemo } from "react";
 import {
   calculateMetrics,
   filterTodayAppointments,
 } from "../utils/dashboardCalculations";
 import cashRegisterService from "../async/services/get/cashRegisterService";
 import appointmentsService from "../async/services/get/appointmentsService";
+import { MainContext } from "../context/MainContext";
 
 export const useDashboardData = () => {
-  // OCP - Open/Closed Principle: Fácil de extender con nuevas queries
+  const { user } = useContext(MainContext);
   const cashRegisterQuery = useQuery({
     queryKey: ["cashRegister"],
     queryFn: cashRegisterService,
@@ -20,9 +21,9 @@ export const useDashboardData = () => {
     queryFn: appointmentsService,
   });
 
-  const isLoading = cashRegisterQuery.isLoading || appointmentsQuery.isLoading;
-  const isError = cashRegisterQuery.isError || appointmentsQuery.isError;
-  const error = cashRegisterQuery.error || appointmentsQuery.error;
+  const isLoading = appointmentsQuery.isLoading;
+  const isError = appointmentsQuery.isError;
+  const error = appointmentsQuery.error;
 
   // ISP - Interface Segregation: Cada cálculo tiene su responsabilidad
   const metrics = useMemo(

@@ -7,7 +7,7 @@ import { MainContext } from "../../context/MainContext";
 
 export default function FormMovementComponent({ cashRegisterId }) {
   const navigate = useNavigate();
-  const { user } = useContext(MainContext);
+  const { user, refetchCaja } = useContext(MainContext);
   const [localError, setLocalError] = useState("");
 
   const [form, setForm] = useState({
@@ -23,7 +23,11 @@ export default function FormMovementComponent({ cashRegisterId }) {
     type: messageType,
     reset,
     data,
-  } = useApiMutation(cashMovementAddService);
+  } = useApiMutation(cashMovementAddService, {
+    onSuccess: (data) => {
+      refetchCaja();
+    },
+  });
 
   useEffect(() => {
     if (data && data.ok) {
