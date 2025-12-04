@@ -4,7 +4,7 @@ import useApiMutation from "./useApiMutation";
 import appointmentAddService from "../async/services/post/appointmentAddService";
 
 export const useAppointmentForm = (patients, specialties) => {
-  const { user, cajaResponse } = useContext(MainContext);
+  const { user, cashRegister } = useContext(MainContext);
   const { mutate, isPending, message, type, reset } = useApiMutation(
     appointmentAddService
   );
@@ -110,11 +110,12 @@ export const useAppointmentForm = (patients, specialties) => {
       status: "PENDING",
       source: "reception",
       userId: user.id,
-      cashRegisterId: cajaResponse?.data?.id,
+      cashRegisterId: cashRegister?.data?.id,
       type: "INCOME",
       amount: reserva,
       description: "Pago por consulta",
     };
+    console.log("Submitting appointment with payload:", payload);
 
     mutate(payload);
   };

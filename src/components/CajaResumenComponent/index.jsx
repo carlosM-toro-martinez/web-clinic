@@ -51,7 +51,7 @@ export default function CajaResumenComponent({ lastCash }) {
                 Monto actual
               </p>
               <p className="text-3xl font-bold text-green-500">
-                Bs{lastCash?.actualAmount}
+                Bs{parseFloat(lastCash?.actualAmount || 0).toFixed(1)}
               </p>
             </div>
             <div className="card">
