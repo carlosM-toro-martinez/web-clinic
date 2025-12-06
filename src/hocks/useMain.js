@@ -31,24 +31,20 @@ function useMain() {
     localStorage.removeItem("token");
   }, []);
 
-  // Validar token al iniciar
   useEffect(() => {
     const validateToken = async (storedToken) => {
       try {
         const response = await loginValidateService({ token: storedToken });
 
         if (response.ok && response.valid) {
-          // Token válido, permitir acceso
           setShouldFetchCaja(true);
           return true;
         } else {
-          // Token inválido o expirado
           console.warn("Token inválido o expirado:", response);
           logout();
           return false;
         }
       } catch (error) {
-        // Error en la petición de validación
         console.error("Error al validar token:", error);
         logout();
         return false;
@@ -65,7 +61,6 @@ function useMain() {
         setUser(parsedUser);
         setAuth(true);
 
-        // Validar el token después de restaurar la sesión
         validateToken(storedToken);
       } catch (error) {
         console.error("Error al restaurar sesión:", error);
@@ -75,7 +70,6 @@ function useMain() {
     }
   }, [logout]);
 
-  // Actualizar caja cuando la respuesta cambie
   useEffect(() => {
     if (cajaResponse) {
       setCashRegister(cajaResponse);

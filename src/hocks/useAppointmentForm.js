@@ -75,12 +75,12 @@ export const useAppointmentForm = (patients, specialties) => {
     const total = Number(selectedFee.amount);
     const reserva = Number(reservationAmount);
 
-    if (reserva < total * 0.5) {
-      updateFormState({
-        localError: "La reserva debe ser al menos el 50% del total.",
-      });
-      return;
-    }
+    // if (reserva < total * 0.5) {
+    //   updateFormState({
+    //     localError: "La reserva debe ser al menos el 50% del total.",
+    //   });
+    //   return;
+    // }
 
     const [startHour, startMinute] = selectedSchedule.startTime
       .split(":")

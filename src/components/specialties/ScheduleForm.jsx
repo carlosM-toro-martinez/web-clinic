@@ -1,5 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { CalendarDays, Clock, Plus, X, Users, Calendar } from "lucide-react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { CalendarDays, Clock, Plus, Users, Calendar } from "lucide-react";
+import ScheduleItem from "./ScheduleItem";
+
+const daysOfWeek = [
+  "Domingo",
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+];
 
 export default function ScheduleForm({
   onSubmit,
@@ -7,33 +18,35 @@ export default function ScheduleForm({
   initialData = [],
   onCancel,
   doctors = [],
-  specialtyId, // Nueva prop: ID de la especialidad actual
+  specialtyId,
 }) {
-  // Filtrar doctores que pertenecen a esta especialidad
-  const filteredDoctors = doctors.filter((doctor) =>
-    doctor.specialties?.some((spec) => spec.specialtyId === specialtyId)
+  const filteredDoctors = useMemo(
+    () =>
+      doctors.filter((doctor) =>
+        doctor.specialties?.some((spec) => spec.specialtyId === specialtyId)
+      ),
+    [doctors, specialtyId]
   );
 
-  const [schedules, setSchedules] = useState(
-    initialData.length > 0
-      ? initialData
-      : filteredDoctors.length > 0
-      ? [
-          {
-            doctorId: filteredDoctors[0]?.id || "",
-            dayOfWeek: 1,
-            startTime: "08:00",
-            endTime: "12:00",
-          },
-        ]
-      : []
-  );
+  const [schedules, setSchedules] = useState(() => {
+    if (initialData.length > 0) return initialData;
+    if (filteredDoctors.length > 0) {
+      return [
+        {
+          doctorId: filteredDoctors[0]?.id || "",
+          dayOfWeek: 1,
+          startTime: "08:00",
+          endTime: "12:00",
+        },
+      ];
+    }
+    return [];
+  });
 
-  const [appointmentDuration, setAppointmentDuration] = useState(30); // Duración en minutos
+  const [appointmentDuration, setAppointmentDuration] = useState(30);
   const [generatedAppointments, setGeneratedAppointments] = useState([]);
 
   useEffect(() => {
-    // Si no hay doctores para esta especialidad, mostramos mensaje
     if (filteredDoctors.length === 0) {
       setSchedules([]);
     }
@@ -51,31 +64,33 @@ export default function ScheduleForm({
     ]);
   };
 
-  const handleScheduleChange = (index, field, value) => {
-    const updated = [...schedules];
-    updated[index][field] = value;
-    setSchedules(updated);
-  };
+  const handleScheduleChange = useCallback((index, field, value) => {
+    setSchedules((prev) => {
+      const updated = [...prev];
+      updated[index][field] = value;
+      return updated;
+    });
+  }, []);
 
-  const handleRemoveSchedule = (index) => {
-    if (schedules.length > 1) {
-      setSchedules(schedules.filter((_, i) => i !== index));
-    }
-  };
+  const handleRemoveSchedule = useCallback(
+    (index) => {
+      if (schedules.length > 1) {
+        setSchedules((prev) => prev.filter((_, i) => i !== index));
+      }
+    },
+    [schedules.length]
+  );
 
-  const validateSchedule = (schedule) => {
+  const validateSchedule = useCallback((schedule) => {
     if (!schedule.doctorId || !schedule.startTime || !schedule.endTime) {
       return false;
     }
-
-    // Validar horas
     const start = new Date(`1970/01/01 ${schedule.startTime}`);
     const end = new Date(`1970/01/01 ${schedule.endTime}`);
     return start < end;
-  };
+  }, []);
 
-  // Función para generar citas de 30 minutos
-  const generateTimeSlots = (startTime, endTime, duration = 30) => {
+  const generateTimeSlots = useCallback((startTime, endTime, duration) => {
     const slots = [];
     const [startHour, startMinute] = startTime.split(":").map(Number);
     const [endHour, endMinute] = endTime.split(":").map(Number);
@@ -87,12 +102,10 @@ export default function ScheduleForm({
       currentHour < endHour ||
       (currentHour === endHour && currentMinute < endMinute)
     ) {
-      // Formatear hora actual
       const slotStart = `${currentHour
         .toString()
         .padStart(2, "0")}:${currentMinute.toString().padStart(2, "0")}`;
 
-      // Calcular fin de la cita
       let slotEndHour = currentHour;
       let slotEndMinute = currentMinute + duration;
 
@@ -109,13 +122,9 @@ export default function ScheduleForm({
         slotEndHour < endHour ||
         (slotEndHour === endHour && slotEndMinute <= endMinute)
       ) {
-        slots.push({
-          startTime: slotStart,
-          endTime: slotEnd,
-        });
+        slots.push({ startTime: slotStart, endTime: slotEnd });
       }
 
-      // Avanzar en la duración de la cita
       currentMinute += duration;
       if (currentMinute >= 60) {
         currentHour += Math.floor(currentMinute / 60);
@@ -124,29 +133,57 @@ export default function ScheduleForm({
     }
 
     return slots;
+  }, []);
+
+  const getDoctorName = useCallback(
+    (doctorId) => {
+      const doctor = filteredDoctors.find((d) => d.id === doctorId);
+      return doctor
+        ? `Dr(a). ${doctor.firstName} ${doctor.lastName}`
+        : "No seleccionado";
+    },
+    [filteredDoctors]
+  );
+
+  const calculateTotalAppointments = useCallback(() => {
+    let total = 0;
+    schedules.forEach((schedule) => {
+      if (validateSchedule(schedule)) {
+        const slots = generateTimeSlots(
+          schedule.startTime,
+          schedule.endTime,
+          appointmentDuration
+        );
+        total += slots.length;
+      }
+    });
+    return total;
+  }, [schedules, appointmentDuration, validateSchedule, generateTimeSlots]);
+
+  const handleDurationChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+    if (value > 0 && value <= 1440) {
+      // Máximo 24 horas (1440 minutos)
+      setAppointmentDuration(value);
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validar todos los schedules
     const validSchedules = schedules.filter(validateSchedule);
-
     if (validSchedules.length === 0) {
       alert("Debes completar al menos un horario válido");
       return;
     }
 
-    // Generar array de citas individuales (slots de 30 minutos)
     const appointmentsToSend = [];
-
     validSchedules.forEach((schedule) => {
       const timeSlots = generateTimeSlots(
         schedule.startTime,
         schedule.endTime,
         appointmentDuration
       );
-
       timeSlots.forEach((slot) => {
         appointmentsToSend.push({
           doctorId: schedule.doctorId,
@@ -162,52 +199,17 @@ export default function ScheduleForm({
       return;
     }
 
-    // Mostrar preview de citas generadas
     setGeneratedAppointments(appointmentsToSend);
 
-    // Confirmar antes de enviar
     const confirmSend = window.confirm(
       `Se generarán ${appointmentsToSend.length} citas de ${appointmentDuration} minutos.\n¿Deseas continuar?`
     );
 
     if (confirmSend) {
-      onSubmit(appointmentsToSend); // Enviamos ARRAY de citas individuales
+      onSubmit(appointmentsToSend);
     }
   };
 
-  const getDoctorName = (doctorId) => {
-    const doctor = filteredDoctors.find((d) => d.id === doctorId);
-    return doctor
-      ? `Dr(a). ${doctor.firstName} ${doctor.lastName}`
-      : "No seleccionado";
-  };
-
-  const daysOfWeek = [
-    "Domingo",
-    "Lunes",
-    "Martes",
-    "Miércoles",
-    "Jueves",
-    "Viernes",
-    "Sábado",
-  ];
-
-  const calculateTotalAppointments = () => {
-    let total = 0;
-    schedules.forEach((schedule) => {
-      if (validateSchedule(schedule)) {
-        const slots = generateTimeSlots(
-          schedule.startTime,
-          schedule.endTime,
-          appointmentDuration
-        );
-        total += slots.length;
-      }
-    });
-    return total;
-  };
-
-  // Si no hay doctores para esta especialidad
   if (filteredDoctors.length === 0) {
     return (
       <div className="mt-4 p-4 border border-yellow-200 rounded-xl bg-yellow-50">
@@ -268,20 +270,17 @@ export default function ScheduleForm({
             <span className="text-sm text-gray-700">Duración por cita:</span>
           </div>
           <div className="flex items-center gap-2">
-            {[30, 45, 60].map((duration) => (
-              <button
-                key={duration}
-                type="button"
-                onClick={() => setAppointmentDuration(duration)}
-                className={`px-3 py-1 text-xs rounded-lg transition ${
-                  appointmentDuration === duration
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {duration} min
-              </button>
-            ))}
+            <input
+              type="number"
+              min="1"
+              max="1440"
+              step="1"
+              value={appointmentDuration}
+              onChange={handleDurationChange}
+              className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              title="Duración en minutos (1-1440)"
+            />
+            <span className="text-sm text-gray-600">minutos</span>
           </div>
         </div>
       </div>
@@ -290,161 +289,23 @@ export default function ScheduleForm({
       <div className="p-4">
         <div className="space-y-3 mb-4 pr-1">
           {schedules.map((schedule, index) => (
-            <div
+            <ScheduleItem
               key={index}
-              className="p-3 border border-gray-300 rounded-lg bg-gray-50"
-            >
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-xs font-medium text-gray-700">
-                  Horario #{index + 1}
-                </span>
-                {schedules.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveSchedule(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <X className="w-7 h-7" />
-                  </button>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-                <div className="md:col-span-1">
-                  <div className="relative">
-                    <select
-                      className="input text-xs py-1 h-12"
-                      value={schedule.doctorId}
-                      onChange={(e) =>
-                        handleScheduleChange(index, "doctorId", e.target.value)
-                      }
-                    >
-                      <option value="">Doctor</option>
-                      {filteredDoctors.map((doctor) => (
-                        <option key={doctor.id} value={doctor.id}>
-                          Dr. {doctor.firstName} {doctor.lastName}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Día de la semana */}
-                <div>
-                  <select
-                    className="input text-xs py-1 h-12"
-                    value={schedule.dayOfWeek}
-                    onChange={(e) =>
-                      handleScheduleChange(index, "dayOfWeek", e.target.value)
-                    }
-                  >
-                    <option value="1">Lunes</option>
-                    <option value="2">Martes</option>
-                    <option value="3">Miércoles</option>
-                    <option value="4">Jueves</option>
-                    <option value="5">Viernes</option>
-                    <option value="6">Sábado</option>
-                    <option value="0">Domingo</option>
-                  </select>
-                </div>
-
-                {/* Horas */}
-                <div className="flex gap-1">
-                  <div className="relative flex-1">
-                    <input
-                      type="time"
-                      className="input text-xs pl-7 py-1 h-12"
-                      value={schedule.startTime}
-                      onChange={(e) =>
-                        handleScheduleChange(index, "startTime", e.target.value)
-                      }
-                    />
-                  </div>
-                  <span className="self-center text-gray-400 text-xs">-</span>
-                  <div className="relative flex-1">
-                    <input
-                      type="time"
-                      className="input text-xs pl-7 py-1 h-12"
-                      value={schedule.endTime}
-                      onChange={(e) =>
-                        handleScheduleChange(index, "endTime", e.target.value)
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Vista previa de citas generadas */}
-              {validateSchedule(schedule) && (
-                <div className="mt-2 pt-2 border-t border-gray-200">
-                  <div className="flex justify-between items-center mb-1">
-                    <div className="text-xs text-gray-600">
-                      {daysOfWeek[schedule.dayOfWeek] || "Lunes"}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {schedule.startTime} - {schedule.endTime}
-                    </div>
-                  </div>
-
-                  {/* Mostrar citas generadas para este horario */}
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {generateTimeSlots(
-                      schedule.startTime,
-                      schedule.endTime,
-                      appointmentDuration
-                    )
-                      .slice(0, 6) // Mostrar solo las primeras 6 para no saturar
-                      .map((slot, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded"
-                        >
-                          {slot.startTime}
-                        </span>
-                      ))}
-                    {generateTimeSlots(
-                      schedule.startTime,
-                      schedule.endTime,
-                      appointmentDuration
-                    ).length > 6 && (
-                      <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
-                        +
-                        {generateTimeSlots(
-                          schedule.startTime,
-                          schedule.endTime,
-                          appointmentDuration
-                        ).length - 6}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="text-xs text-gray-500 mt-1">
-                    {
-                      generateTimeSlots(
-                        schedule.startTime,
-                        schedule.endTime,
-                        appointmentDuration
-                      ).length
-                    }{" "}
-                    citas de {appointmentDuration} min
-                  </div>
-                </div>
-              )}
-
-              {/* Validación */}
-              {!validateSchedule(schedule) &&
-                schedule.doctorId &&
-                schedule.startTime &&
-                schedule.endTime && (
-                  <div className="text-red-500 text-xs mt-1">
-                    La hora de inicio debe ser anterior a la hora de fin
-                  </div>
-                )}
-            </div>
+              index={index}
+              schedule={schedule}
+              filteredDoctors={filteredDoctors}
+              appointmentDuration={appointmentDuration}
+              onScheduleChange={handleScheduleChange}
+              onRemoveSchedule={handleRemoveSchedule}
+              showRemoveButton={schedules.length > 1}
+              daysOfWeek={daysOfWeek}
+              generateTimeSlots={generateTimeSlots}
+              validateSchedule={validateSchedule}
+              getDoctorName={getDoctorName}
+            />
           ))}
         </div>
 
-        {/* Botón para agregar más horarios */}
         <button
           type="button"
           onClick={handleAddSchedule}
@@ -454,7 +315,6 @@ export default function ScheduleForm({
           Agregar otro bloque horario
         </button>
 
-        {/* Resumen */}
         <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="flex items-center">
@@ -478,14 +338,13 @@ export default function ScheduleForm({
           </div>
         </div>
 
-        {/* Botones de acción */}
         <div className="flex gap-2">
           <button
             type="submit"
             disabled={
               isSubmitting || schedules.filter(validateSchedule).length === 0
             }
-            className="btn-primary text-xs px-3 py-2 flex-1"
+            className="btn-primary cursor-pointer text-xs px-3 py-2 flex-1"
           >
             {isSubmitting
               ? "Guardando..."
@@ -503,7 +362,6 @@ export default function ScheduleForm({
         </div>
       </div>
 
-      {/* Preview de citas generadas (solo para debugging) */}
       {generatedAppointments.length > 0 &&
         process.env.NODE_ENV === "development" && (
           <div className="p-3 border-t border-gray-200 bg-gray-50 text-xs">

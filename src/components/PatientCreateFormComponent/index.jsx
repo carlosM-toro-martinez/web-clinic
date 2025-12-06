@@ -63,9 +63,6 @@ export default function PatientCreateForm() {
       "ciNumber",
       "birthDate",
       "gender",
-      "address",
-      "phone",
-      "email",
     ];
     for (let field of requiredFields) {
       if (!form[field]?.trim()) {
@@ -73,14 +70,16 @@ export default function PatientCreateForm() {
         return false;
       }
     }
-    if (!validateEmail(form.email)) {
+    if (form.email && !validateEmail(form.email)) {
       setLocalError("Correo electrónico inválido.");
       return false;
     }
-    if (!validatePhone(form.phone)) {
+
+    if (form.phone && !validatePhone(form.phone)) {
       setLocalError("Número de teléfono inválido.");
       return false;
     }
+
     return true;
   };
 

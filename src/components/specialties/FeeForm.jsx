@@ -124,6 +124,8 @@ export default function FeeForm({
                 <option value="FOLLOW_UP">Control</option>
                 <option value="EMERGENCY">Emergencia</option>
                 <option value="PROCEDURE">Procedimiento</option>
+                <option value="RECONSULTATION">Reconsulta</option>
+                <option value="SURGERIES">Cirujias</option>
               </select>
 
               <div className="relative">
