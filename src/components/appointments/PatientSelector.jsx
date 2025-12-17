@@ -18,7 +18,7 @@ const PatientSelector = ({
           <button
             type="button"
             onClick={onOpenModal}
-            className="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded-lg transition-colors cursor-pointer"
+            className="text-sm cursor-pointer bg-[var(--color-primary)] text-white px-3 py-1 rounded-lg transition-colors cursor-pointer"
           >
             + Nuevo Paciente
           </button>

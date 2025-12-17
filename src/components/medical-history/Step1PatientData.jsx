@@ -1,8 +1,11 @@
-import React from "react";
+import { useContext, useEffect } from "react";
+import { MainContext } from "../../context/MainContext";
 import toTitleCase from "../../utils/toTitleCase";
+import { useNavigate } from "react-router-dom";
 
 const Step1PatientData = ({
   patient,
+  onPatientUpdate,
   specialtyId,
   doctorId,
   initialNote,
@@ -13,7 +16,12 @@ const Step1PatientData = ({
   specialty,
   doctor,
 }) => {
-  console.log(specialty, doctor);
+  const navigate = useNavigate();
+  const { patientHistory, setPatientHistory } = useContext(MainContext);
+
+  const handleEdit = (patient) => {
+    navigate("/pacientes/crear", { state: { patient } });
+  };
 
   return (
     <section className="space-y-6">
@@ -41,30 +49,53 @@ const Step1PatientData = ({
 
       {/* Datos del paciente */}
       <div className="bg-white p-6 rounded-2xl border-2 border-gray-100 shadow-sm">
-        <label className="block text-sm font-semibold text-gray-900 mb-3">
-          📋 Datos del Paciente
-        </label>
+        <div className="flex justify-between items-center mb-3">
+          <label className="block text-sm font-semibold text-gray-900">
+            📋 Datos del Paciente
+          </label>
+          <button
+            type="button"
+            onClick={() => handleEdit(patientHistory)}
+            className="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors duration-200"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+            Editar Paciente
+          </button>
+        </div>
 
         <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <div className="text-sm text-gray-600">Nombre completo</div>
               <div className="font-medium text-gray-900">
-                {patient?.firstName} {patient?.lastName}
+                {patientHistory?.firstName} {patientHistory?.lastName}
               </div>
             </div>
 
             <div>
               <div className="text-sm text-gray-600">C.I.</div>
               <div className="font-medium text-gray-900">
-                {patient?.ciNumber || "No registrado"}
+                {patientHistory?.ciNumber || "No registrado"}
               </div>
             </div>
 
             <div>
               <div className="text-sm text-gray-600">Teléfono</div>
               <div className="font-medium text-gray-900">
-                {patient?.phone || "No registrado"}
+                {patientHistory?.phone || "No registrado"}
               </div>
             </div>
 
@@ -76,11 +107,16 @@ const Step1PatientData = ({
             </div>
           </div>
 
-          {patient?.birthDate && (
+          {patientHistory?.birthDate && (
             <div className="mt-3">
               <div className="text-sm text-gray-600">Fecha de Nacimiento</div>
               <div className="font-medium text-gray-900">
-                {new Date(patient.birthDate).toLocaleDateString("es-BO")}
+                {new Date(patientHistory?.birthDate).toLocaleDateString(
+                  "es-BO",
+                  {
+                    timeZone: "UTC",
+                  }
+                )}
               </div>
             </div>
           )}

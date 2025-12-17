@@ -26,6 +26,7 @@ const menuItems = [
   { label: "Consultas", path: "/consultas", icon: ClipboardList },
   { label: "Caja", path: "/caja", icon: BriefcaseMedical },
   { label: "Especialidades", path: "/especialidades", icon: FileText },
+  { label: "Reportes", path: "/reportes", icon: Activity },
 ];
 
 function SidebarLayoutComponent() {

@@ -126,6 +126,7 @@ export default function SpecialtyCard({ specialty, doctors, onUpdate }) {
 
   const feeStats = getFeeStats();
   const scheduleStats = getScheduleStats();
+  console.log(specialty);
 
   return (
     <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 mb-4">
@@ -270,51 +271,162 @@ export default function SpecialtyCard({ specialty, doctors, onUpdate }) {
               )}
             </div>
 
-            {/* Lista de horarios existentes */}
             {specialty.schedules.length > 0 ? (
-              <div className="grid md:grid-cols-2 gap-3 mb-4">
-                {specialty.schedules.map((sch) => (
-                  <div
-                    key={sch.id}
-                    className="flex flex-col bg-gray-50 border border-gray-200 rounded-xl p-4"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-gray-800">
-                        {daysOfWeek[sch.dayOfWeek]}
-                      </span>
-                      <span className="flex items-center text-sm text-gray-600">
-                        <Clock className="w-4 h-4 mr-1 text-blue-500" />
-                        {sch.startTime} - {sch.endTime}
-                      </span>
-                    </div>
-                    {sch.doctor && (
-                      <div className="flex items-center text-gray-600 text-sm">
-                        <User className="w-4 h-4 mr-1 text-blue-500" />
-                        Dr(a). {sch.doctor.firstName} {sch.doctor.lastName}
+              <div className="space-y-4">
+                {/* Primero, agrupamos por doctor y día */}
+                {(() => {
+                  // Agrupar horarios por doctor y día
+                  const grouped = specialty.schedules.reduce(
+                    (acc, schedule) => {
+                      const key = `${schedule.doctorId}-${schedule.dayOfWeek}`;
+                      if (!acc[key]) {
+                        acc[key] = {
+                          doctor: schedule.doctor,
+                          dayOfWeek: schedule.dayOfWeek,
+                          slots: [],
+                        };
+                      }
+                      acc[key].slots.push({
+                        id: schedule.id,
+                        startTime: schedule.startTime,
+                        endTime: schedule.endTime,
+                      });
+                      return acc;
+                    },
+                    {}
+                  );
+
+                  // Ordenar slots por hora de inicio y agrupar rangos continuos
+                  Object.keys(grouped).forEach((key) => {
+                    const group = grouped[key];
+                    group.slots.sort((a, b) =>
+                      a.startTime.localeCompare(b.startTime)
+                    );
+
+                    // Combinar slots consecutivos
+                    const merged = [];
+                    let current = { ...group.slots[0] };
+
+                    for (let i = 1; i < group.slots.length; i++) {
+                      const next = group.slots[i];
+
+                      // Si el siguiente slot comienza donde termina el actual, extender
+                      if (current.endTime === next.startTime) {
+                        current.endTime = next.endTime;
+                      } else {
+                        merged.push(current);
+                        current = { ...next };
+                      }
+                    }
+                    merged.push(current);
+
+                    group.ranges = merged;
+
+                    // Calcular total de horas
+                    group.totalHours = group.ranges.reduce((total, range) => {
+                      const start = new Date(`1970/01/01 ${range.startTime}`);
+                      const end = new Date(`1970/01/01 ${range.endTime}`);
+                      return total + (end - start) / (1000 * 60 * 60);
+                    }, 0);
+                  });
+
+                  return Object.values(grouped).map((group, index) => (
+                    <div
+                      key={`${group.doctor.id}-${group.dayOfWeek}`}
+                      className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                        <div className="flex items-center mb-3 md:mb-0">
+                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                            <User className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-800">
+                              Dr(a). {group.doctor.firstName}{" "}
+                              {group.doctor.lastName}
+                            </h4>
+                            <div className="flex items-center text-sm text-gray-600 mt-1">
+                              <CalendarDays className="w-4 h-4 mr-1" />
+                              {daysOfWeek[group.dayOfWeek] ||
+                                "Día no especificado"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg">
+                          <div className="text-sm font-medium">
+                            {group.slots.length} citas •{" "}
+                            {group.totalHours.toFixed(1)} horas
+                          </div>
+                        </div>
                       </div>
-                    )}
-                    <div className="mt-2 text-xs text-gray-500">
-                      Duración:{" "}
-                      {(
-                        (new Date(`1970/01/01 ${sch.endTime}`) -
-                          new Date(`1970/01/01 ${sch.startTime}`)) /
-                        (1000 * 60 * 60)
-                      ).toFixed(1)}{" "}
-                      horas
+
+                      <div className="space-y-3">
+                        <div className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                          <Clock className="w-4 h-4 mr-2 text-blue-500" />
+                          Horarios disponibles:
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          {group.ranges.map((range, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center px-3 py-2 bg-blue-50 border border-blue-100 rounded-lg"
+                            >
+                              <span className="font-medium text-blue-700">
+                                {range.startTime} - {range.endTime}
+                              </span>
+                              <span className="mx-2 text-blue-400">•</span>
+                              <span className="text-sm text-blue-600">
+                                {(
+                                  (new Date(`1970/01/01 ${range.endTime}`) -
+                                    new Date(`1970/01/01 ${range.startTime}`)) /
+                                  (1000 * 60 * 60)
+                                ).toFixed(1)}
+                                h
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="pt-3 border-t border-gray-100">
+                          <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                            <div>
+                              <span className="block font-medium text-gray-500">
+                                Primera cita:
+                              </span>
+                              <span className="text-gray-800 font-medium">
+                                {group.slots[0]?.startTime || "N/A"}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="block font-medium text-gray-500">
+                                Última cita:
+                              </span>
+                              <span className="text-gray-800 font-medium">
+                                {group.slots[group.slots.length - 1]?.endTime ||
+                                  "N/A"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ));
+                })()}
               </div>
             ) : (
-              <div className="text-center py-4 bg-gray-50 rounded-lg mb-4">
-                <CalendarDays className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-500 text-sm">
+              <div className="text-center py-8 bg-gray-50 rounded-xl border border-gray-200">
+                <CalendarDays className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                <p className="text-gray-600 font-medium">
                   No hay horarios registrados
+                </p>
+                <p className="text-gray-500 text-sm mt-1">
+                  Agrega horarios para que los doctores puedan atender pacientes
                 </p>
               </div>
             )}
 
-            {/* Formulario para NUEVOS horarios (array) */}
             {showScheduleForm && (
               <ScheduleForm
                 onSubmit={handleAddSchedules}

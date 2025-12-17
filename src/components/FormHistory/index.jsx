@@ -1,4 +1,3 @@
-import React from "react";
 import { useLocation } from "react-router-dom";
 import { useMedicalHistory } from "../../hocks/useMedicalHistory";
 import StepIndicator from "../medical-history/StepIndicator";
@@ -8,6 +7,8 @@ import Step3PhysicalExam from "../medical-history/Step3PhysicalExam";
 import Step4Diagnosis from "../medical-history/Step4Diagnosis";
 import Step5Treatment from "../medical-history/Step5Treatment";
 import AlertMessage from "../common/AlertMessage";
+import { useContext, useEffect } from "react";
+import { MainContext } from "../../context/MainContext";
 
 const FormHistory = ({ patients = [] }) => {
   const location = useLocation();
@@ -66,12 +67,20 @@ const FormHistory = ({ patients = [] }) => {
     diagnosisResponse,
   } = useMedicalHistory(patients, location.state || {});
 
+  const { patientHistory, setPatientHistory } = useContext(MainContext);
+
+  useEffect(() => {
+    if (!patientHistory) {
+      setPatientHistory({ ...patient });
+    }
+  }, []);
+
   const renderStep = () => {
     switch (step) {
       case 1:
         return (
           <Step1PatientData
-            patient={patient}
+            patient={patientHistory}
             specialtyId={specialtyId}
             doctorId={doctorId}
             initialNote={initialNote}

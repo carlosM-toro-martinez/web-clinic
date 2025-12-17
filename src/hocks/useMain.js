@@ -9,6 +9,7 @@ function useMain() {
   const [token, setToken] = useState("");
   const [cashRegister, setCashRegister] = useState(null);
   const [shouldFetchCaja, setShouldFetchCaja] = useState(false);
+  const [patientHistory, setPatientHistory] = useState(null);
 
   const {
     data: cajaResponse,
@@ -84,6 +85,8 @@ function useMain() {
     isLoadingCaja,
     isErrorCaja,
     errorCaja,
+    patientHistory,
+    setPatientHistory,
     refetchCaja,
     setToken,
     setUser,

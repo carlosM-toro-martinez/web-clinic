@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CalendarDays,
@@ -8,9 +8,17 @@ import {
   CheckCircle,
   Clock as ClockIcon,
 } from "lucide-react";
+import { MainContext } from "../../context/MainContext";
 
 export default function AppointmentsList({ appointments = [] }) {
   const navigate = useNavigate();
+  const { patientHistory, setPatientHistory } = useContext(MainContext);
+
+  useEffect(() => {
+    if (patientHistory) {
+      setPatientHistory(null);
+    }
+  }, []);
 
   // Función para verificar si una fecha es hoy
   const isToday = (dateString) => {

@@ -49,6 +49,7 @@ export default function PatientsTable({ patients }) {
   const handleAppointments = (patient) => {
     navigate(`/pacientes/${patient.id}/citas`);
   };
+  console.log(filteredPatients);
 
   return (
     <section>
@@ -132,18 +133,24 @@ export default function PatientsTable({ patients }) {
                     {p.ciNumber}
                   </td>
                   <td className="p-4 text-[color:var(--color-text-secondary)]">
-                    {new Date(p.birthDate).toLocaleDateString("es-BO")}
+                    {p.birthDate
+                      ? new Date(p.birthDate).toLocaleDateString("es-BO", {
+                          timeZone: "UTC",
+                        })
+                      : " "}
                   </td>
                   <td className="p-4">
-                    {p.gender === "M" ? (
-                      <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700 font-medium">
-                        Masculino
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 text-xs rounded-full bg-pink-100 text-pink-700 font-medium">
-                        Femenino
-                      </span>
-                    )}
+                    {p.gender ? (
+                      p.gender === "M" ? (
+                        <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700 font-medium">
+                          Masculino
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 text-xs rounded-full bg-pink-100 text-pink-700 font-medium">
+                          Femenino
+                        </span>
+                      )
+                    ) : null}
                   </td>
                   <td className="p-4 text-[color:var(--color-text-secondary)]">
                     {p.phone}

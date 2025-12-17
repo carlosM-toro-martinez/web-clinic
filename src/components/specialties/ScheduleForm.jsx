@@ -354,7 +354,7 @@ export default function ScheduleForm({
             <button
               type="button"
               onClick={onCancel}
-              className="btn-secondary text-xs px-3 py-2"
+              className="btn-secondary cursor-pointer text-xs px-3 py-2"
             >
               Cancelar
             </button>

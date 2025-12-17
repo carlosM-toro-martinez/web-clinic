@@ -20,6 +20,7 @@ import MovimientoCaja from "./pages/caja/MovimientoCaja";
 import Login from "./pages/Login";
 import CreateEspecialidad from "./pages/especialidades/CreateEspecialidad";
 import CrearConsulta from "./pages/consultas/CrearConsulta";
+import Reports from "./pages/Reports";
 
 function App() {
   const queryClient = new QueryClient();
@@ -164,6 +165,14 @@ function App() {
               element={
                 <ProtectedRoute roles={["ADMIN"]}>
                   <CreateEspecialidad />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reportes"
+              element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <Reports />
                 </ProtectedRoute>
               }
             />

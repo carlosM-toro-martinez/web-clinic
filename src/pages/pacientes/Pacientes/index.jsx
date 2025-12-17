@@ -50,7 +50,7 @@ function Pacientes() {
 
         <button
           onClick={() => navigate("/pacientes/crear")}
-          className="px-5 py-2.5 rounded-xl text-white font-medium bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] focus:outline-none focus:ring-4 focus:ring-[color:var(--color-primary)]/30 transition"
+          className="px-5 cursor-pointer py-2.5 rounded-xl text-white font-medium bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] focus:outline-none focus:ring-4 focus:ring-[color:var(--color-primary)]/30 transition"
         >
           + Nuevo Paciente
         </button>
