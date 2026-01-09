@@ -141,10 +141,10 @@ export const useMedicalHistory = (patients = [], locationState) => {
     }
 
     if (step === 4) {
-      if (diagnoses.length === 0) {
-        setLocalError("Agrega al menos un diagnóstico.");
-        return;
-      }
+      // if (diagnoses.length === 0) {
+      //   setLocalError("Agrega al menos un diagnóstico.");
+      //   return;
+      // }
       if (!visitDate) {
         setLocalError("Selecciona la fecha de la visita.");
         return;
@@ -228,16 +228,16 @@ export const useMedicalHistory = (patients = [], locationState) => {
       setLocalError("Falta el id de doctor (doctorId).");
       return;
     }
-    if (diagnoses.length === 0) {
-      setLocalError("Agrega al menos un diagnóstico.");
-      return;
-    }
+    // if (diagnoses.length === 0) {
+    //   setLocalError("Agrega al menos un diagnóstico.");
+    //   return;
+    // }
 
     // Si tu flujo requiere al menos una prescripción en el paso 5, valida también:
-    if (prescriptions.length === 0) {
-      setLocalError("Agrega al menos una prescripción antes de guardar.");
-      return;
-    }
+    // if (prescriptions.length === 0) {
+    //   setLocalError("Agrega al menos una prescripción antes de guardar.");
+    //   return;
+    // }
 
     const payload = {
       medicalHistoryData: {

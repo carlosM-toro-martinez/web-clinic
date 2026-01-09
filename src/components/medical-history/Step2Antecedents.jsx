@@ -11,7 +11,7 @@ const Step2Antecedents = ({
       {/* Queja principal */}
       <div className="bg-white p-6 rounded-2xl border-2 border-gray-100 shadow-sm">
         <label className="block text-sm font-semibold text-gray-900 mb-3">
-          💬 Queja Principal en Detalle
+          💬 Detalles del motivo de consulta
         </label>
         <textarea
           rows="3"
@@ -25,7 +25,7 @@ const Step2Antecedents = ({
       {/* Antecedentes Patológicos */}
       <div className="bg-white p-6 rounded-2xl border-2 border-gray-100 shadow-sm">
         <label className="block text-sm font-semibold text-gray-900 mb-3">
-          🏥 Antecedentes Patológicos
+          🏥 Antecedentes patológicos y medicación habitual
         </label>
         <textarea
           rows="3"
@@ -54,10 +54,10 @@ const Step2Antecedents = ({
         />
       </div>
 
-      {/* Medicación Habitual */}
+      {/* Antecedentes Familiares */}
       <div className="bg-white p-6 rounded-2xl border-2 border-gray-100 shadow-sm">
         <label className="block text-sm font-semibold text-gray-900 mb-3">
-          💊 Medicación Habitual
+          👨‍👩‍👧‍👦 Antecedentes Familiares
         </label>
         <textarea
           rows="2"
@@ -65,57 +65,25 @@ const Step2Antecedents = ({
           onChange={(e) =>
             onExtendedFieldChange("habitualMedication", e.target.value)
           }
-          placeholder="Medicamentos de uso regular, dosis, frecuencia..."
+          placeholder="Antecedentes familiares de enfermedades hereditarias, condiciones médicas en familiares directos..."
           className="w-full rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none min-h-[80px]"
         />
       </div>
 
-      {/* Antecedentes Gineco-Obstétricos */}
+      {/* Antecedentes Gineco-Obstétricos - Ahora es un campo libre */}
       <div className="bg-white p-6 rounded-2xl border-2 border-gray-100 shadow-sm">
         <label className="block text-sm font-semibold text-gray-900 mb-3">
-          👩 Gineco-Obstétricos (si aplica)
+          👩 Antecedentes Gineco-Obstétricos (si aplica)
         </label>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-          <div>
-            <label className="block text-sm text-gray-600 mb-2">
-              Menarca (años)
-            </label>
-            <input
-              type="text"
-              placeholder="Edad"
-              value={extendedFields.menarcheAge || ""}
-              onChange={(e) =>
-                onExtendedFieldChange("menarcheAge", e.target.value)
-              }
-              className="w-full rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-2">FUM</label>
-            <input
-              type="date"
-              value={extendedFields.lastMenstrualPeriod || ""}
-              onChange={(e) =>
-                onExtendedFieldChange("lastMenstrualPeriod", e.target.value)
-              }
-              className="w-full rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-2">
-              Gestas/Partos
-            </label>
-            <input
-              type="text"
-              placeholder="G2P2"
-              value={extendedFields.obstetricHistory || ""}
-              onChange={(e) =>
-                onExtendedFieldChange("obstetricHistory", e.target.value)
-              }
-              className="w-full rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-            />
-          </div>
-        </div>
+        <textarea
+          rows="3"
+          value={extendedFields.gynecologicalHistory || ""}
+          onChange={(e) =>
+            onExtendedFieldChange("gynecologicalHistory", e.target.value)
+          }
+          placeholder="Menarca, FUM, gestas, partos, abortos, métodos anticonceptivos, ciclos menstruales, menopausia, etc..."
+          className="w-full rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none min-h-[80px]"
+        />
       </div>
 
       {/* Hábitos */}
@@ -189,6 +157,43 @@ const Step2Antecedents = ({
           </label>
         </div>
 
+        {/* Detalles de Fumar */}
+        {extendedFields.smokes && (
+          <div className="mt-4">
+            <label className="block text-sm text-gray-600 mb-2">
+              Detalles sobre tabaquismo
+            </label>
+            <input
+              type="text"
+              placeholder="Cantidad (cigarrillos/día), años fumando, intentos previos..."
+              value={extendedFields.smokesDetails || ""}
+              onChange={(e) =>
+                onExtendedFieldChange("smokesDetails", e.target.value)
+              }
+              className="w-full rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            />
+          </div>
+        )}
+
+        {/* Detalles de Alcohol */}
+        {extendedFields.alcohol && (
+          <div className="mt-4">
+            <label className="block text-sm text-gray-600 mb-2">
+              Detalles sobre consumo de alcohol
+            </label>
+            <input
+              type="text"
+              placeholder="Tipo, frecuencia, cantidad (unidades/semana), años de consumo..."
+              value={extendedFields.alcoholDetails || ""}
+              onChange={(e) =>
+                onExtendedFieldChange("alcoholDetails", e.target.value)
+              }
+              className="w-full rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            />
+          </div>
+        )}
+
+        {/* Detalles de Drogas (ya existente) */}
         {extendedFields.drugs && (
           <div className="mt-4">
             <label className="block text-sm text-gray-600 mb-2">

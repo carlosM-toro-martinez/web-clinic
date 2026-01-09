@@ -21,6 +21,10 @@ import Login from "./pages/Login";
 import CreateEspecialidad from "./pages/especialidades/CreateEspecialidad";
 import CrearConsulta from "./pages/consultas/CrearConsulta";
 import Reports from "./pages/Reports";
+import ReportsCaja from "./pages/Reports/Caja";
+import ReportsDiagnosticos from "./pages/Reports/Diagnosticos";
+import ReportsCitas from "./pages/Reports/Citas";
+import ReportsPacientes from "./pages/Reports/Pacientes";
 
 function App() {
   const queryClient = new QueryClient();
@@ -173,6 +177,38 @@ function App() {
               element={
                 <ProtectedRoute roles={["ADMIN"]}>
                   <Reports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reportes/caja"
+              element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <ReportsCaja />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reportes/diagnosticos"
+              element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <ReportsDiagnosticos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reportes/citas"
+              element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <ReportsCitas />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reportes/pacientes"
+              element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <ReportsPacientes />
                 </ProtectedRoute>
               }
             />

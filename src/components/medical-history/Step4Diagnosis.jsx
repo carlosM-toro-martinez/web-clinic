@@ -61,7 +61,7 @@ const Step4Diagnosis = ({
     <section className="space-y-6">
       <div className="bg-white p-6 rounded-2xl border-2 border-gray-100 shadow-sm">
         <label className="block text-sm font-semibold text-gray-900 mb-3">
-          🩺 Impresión Diagnóstica (Assessment)
+          🩺 Impresión Diagnóstica
         </label>
         <textarea
           rows="4"

@@ -107,7 +107,17 @@ function SidebarLayoutComponent() {
         >
           {!collapsed && (
             <div className="flex items-center gap-2">
-              <img src={logo} alt="logo" className="mt-0.5" width="150px" />
+              <h1 class="text-1xl md:text-2xl font-extrabold tracking-tight">
+                <span class="text-[var(--color-text-primary)]">Nova</span>
+                <span
+                  class="ml-1
+           text-[var(--color-primary)]"
+                >
+                  Med
+                </span>
+              </h1>
+
+              {/* <img src={logo} alt="logo" className="mt-0.5" width="150px" /> */}
             </div>
           )}
           <button
