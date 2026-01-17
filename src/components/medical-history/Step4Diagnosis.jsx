@@ -47,6 +47,7 @@ const Step4Diagnosis = ({
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && searchTerm.trim()) {
+      e.preventDefault(); // Prevenir que se dispare el submit del formulario padre
       // Si hay diagnósticos filtrados, seleccionar el primero
       if (filteredDiagnoses.length > 0) {
         handleSelectDiagnosis(filteredDiagnoses[0]);

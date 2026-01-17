@@ -138,17 +138,28 @@ const FormHistory = ({ patients = [] }) => {
             onRemovePrescription={removePrescription}
             extendedFields={extendedFields}
             onExtendedFieldChange={updateExtendedField}
+            patient={patient}
+            doctor={doctor}
+            specialty={specialty}
           />
         );
       default:
         return null;
     }
   };
-  // console.log(step);
+  console.log(step);
+
+  const handleFormKeyDown = (e) => {
+    // Prevenir que se envíe el formulario si presionas Enter en un input y no estamos en paso 5
+    if (e.key === "Enter" && step !== 5 && e.target.tagName !== "TEXTAREA") {
+      e.preventDefault();
+    }
+  };
 
   return (
     <form
       onSubmit={handleSubmit}
+      onKeyDown={handleFormKeyDown}
       className="max-w-6xl mx-auto mt-4 p-4 sm:p-6 bg-[var(--color-background)] rounded-2xl"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
@@ -217,7 +228,8 @@ const FormActions = ({ step, onBack, onNext, isPending }) => (
         </button>
       ) : (
         <button
-          type="submit"
+          type="button"
+          onClick={onNext}
           disabled={isPending}
           className="px-8 py-3 cursor-pointer rounded-xl text-white bg-[var(--color-success)] hover:bg-[#0da271] disabled:bg-[var(--color-text-subtle)] disabled:cursor-not-allowed transition font-medium shadow-sm"
         >

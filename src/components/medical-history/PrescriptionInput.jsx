@@ -78,7 +78,7 @@ const PrescriptionInput = ({ onAdd }) => {
           type="button"
           onClick={handleAdd}
           disabled={!medicationName.trim()}
-          className="px-6 py-3 rounded-xl text-white bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium"
+          className="px-6 py-3 cursor-pointer rounded-xl text-white bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium"
         >
           Añadir Medicamento
         </button>

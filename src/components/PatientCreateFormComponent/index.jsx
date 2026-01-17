@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import useApiMutation from "../../hocks/useApiMutation";
 import patientsAddService from "../../async/services/post/patientsAddService";
@@ -15,11 +15,16 @@ export default function PatientCreateForm() {
   // Campos obligatorios según validación
   const requiredFields = ["firstName", "lastName", "ciNumber"];
 
+  // Refs para controlar qué campo está siendo editado
+  const isAgeInputFocused = useRef(false);
+  const isBirthDateInputFocused = useRef(false);
+
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     ciNumber: "",
     birthDate: "",
+    age: "",
     gender: "",
     address: "",
     phone: "",
@@ -39,13 +44,56 @@ export default function PatientCreateForm() {
   const { mutate, isPending, message, type, reset, data, setIdEdit } =
     useApiMutation(selectedService);
 
+  // Función para calcular edad a partir de fecha de nacimiento
+  const calculateAgeFromBirthDate = (birthDate) => {
+    if (!birthDate) return "";
+
+    const today = new Date();
+    const birth = new Date(birthDate);
+
+    // Verificar que la fecha sea válida
+    if (isNaN(birth.getTime())) return "";
+
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+
+    // Ajustar si aún no ha pasado el cumpleaños este año
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birth.getDate())
+    ) {
+      age--;
+    }
+
+    return age.toString();
+  };
+
+  // Función para calcular fecha de nacimiento a partir de edad
+  const calculateBirthDateFromAge = (age) => {
+    if (!age || isNaN(age) || age < 0 || age > 120) return "";
+
+    const today = new Date();
+    const birthYear = today.getFullYear() - parseInt(age, 10);
+
+    // Crear fecha con formato YYYY-MM-DD (para input date)
+    // Asumimos fecha de nacimiento como 1ro de enero del año calculado
+    // Puedes cambiar esto si prefieres otra fecha por defecto
+    const birthDate = `${birthYear}-01-01`;
+
+    return birthDate;
+  };
+
   useEffect(() => {
     if (editingPatient) {
+      const birthDate = editingPatient.birthDate?.split("T")[0] || "";
+      const calculatedAge = calculateAgeFromBirthDate(birthDate);
+
       setForm({
         firstName: editingPatient.firstName || "",
         lastName: editingPatient.lastName || "",
         ciNumber: editingPatient.ciNumber || "",
-        birthDate: editingPatient.birthDate?.split("T")[0] || "",
+        birthDate: birthDate,
+        age: calculatedAge,
         gender: editingPatient.gender || "",
         address: editingPatient.address || "",
         phone: editingPatient.phone || "",
@@ -78,6 +126,13 @@ export default function PatientCreateForm() {
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePhone = (phone) => /^\+?\d{7,15}$/.test(phone);
 
+  // Validar que la edad sea un número válido
+  const validateAge = (age) => {
+    if (!age) return true;
+    const ageNum = parseInt(age, 10);
+    return !isNaN(ageNum) && ageNum >= 0 && ageNum <= 120;
+  };
+
   // Función para verificar si un campo específico es inválido
   const isFieldInvalid = (fieldName) => {
     if (!requiredFields.includes(fieldName)) return false;
@@ -88,6 +143,10 @@ export default function PatientCreateForm() {
 
     if (fieldName === "phone" && form.phone) {
       return !validatePhone(form.phone);
+    }
+
+    if (fieldName === "age" && form.age) {
+      return !validateAge(form.age);
     }
 
     return showFieldErrors && !form[fieldName]?.trim();
@@ -111,6 +170,11 @@ export default function PatientCreateForm() {
 
     if (form.phone && !validatePhone(form.phone)) {
       setLocalError("Número de teléfono inválido.");
+      return false;
+    }
+
+    if (form.age && !validateAge(form.age)) {
+      setLocalError("Edad inválida. Debe ser un número entre 0 y 120.");
       return false;
     }
 
@@ -140,15 +204,100 @@ export default function PatientCreateForm() {
     });
   };
 
+  const handleAgeChange = (e) => {
+    const { value } = e.target;
+
+    // Limpiar el valor (solo números)
+    const cleanValue = value.replace(/[^0-9]/g, "");
+
+    // Actualizar el campo edad
+    setForm((prev) => ({
+      ...prev,
+      age: cleanValue,
+    }));
+
+    // Si el campo edad tiene focus, calcular la fecha de nacimiento
+    if (cleanValue && isAgeInputFocused.current) {
+      const calculatedBirthDate = calculateBirthDateFromAge(cleanValue);
+      setForm((prev) => ({
+        ...prev,
+        birthDate: calculatedBirthDate,
+      }));
+    }
+  };
+
+  const handleBirthDateChange = (e) => {
+    const { value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      birthDate: value,
+    }));
+
+    // Si el campo fecha de nacimiento tiene focus, calcular la edad
+    if (value && isBirthDateInputFocused.current) {
+      const calculatedAge = calculateAgeFromBirthDate(value);
+      setForm((prev) => ({
+        ...prev,
+        age: calculatedAge,
+      }));
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+
+    // Manejar campos especiales
+    if (name === "age") {
+      handleAgeChange(e);
+    } else if (name === "birthDate") {
+      handleBirthDateChange(e);
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
+    }
+
     setTouchedFields((prev) => ({ ...prev, [name]: true }));
   };
 
   const handleBlur = (e) => {
     const { name } = e.target;
+
+    // Resetear los flags de focus
+    if (name === "age") {
+      isAgeInputFocused.current = false;
+    } else if (name === "birthDate") {
+      isBirthDateInputFocused.current = false;
+    }
+
+    // Calcular automáticamente cuando se pierde el focus
+    if (name === "age" && form.age && validateAge(form.age)) {
+      const calculatedBirthDate = calculateBirthDateFromAge(form.age);
+      setForm((prev) => ({
+        ...prev,
+        birthDate: calculatedBirthDate,
+      }));
+    } else if (name === "birthDate" && form.birthDate) {
+      const calculatedAge = calculateAgeFromBirthDate(form.birthDate);
+      setForm((prev) => ({
+        ...prev,
+        age: calculatedAge,
+      }));
+    }
+
     setTouchedFields((prev) => ({ ...prev, [name]: true }));
+  };
+
+  const handleFocus = (e) => {
+    const { name } = e.target;
+
+    // Marcar qué campo está siendo editado
+    if (name === "age") {
+      isAgeInputFocused.current = true;
+      isBirthDateInputFocused.current = false;
+    } else if (name === "birthDate") {
+      isBirthDateInputFocused.current = true;
+      isAgeInputFocused.current = false;
+    }
   };
 
   // Definición de campos con información de obligatoriedad
@@ -176,6 +325,15 @@ export default function PatientCreateForm() {
       name: "birthDate",
       type: "date",
       required: false,
+    },
+    {
+      label: "Edad",
+      name: "age",
+      type: "number",
+      placeholder: "Ej: 30",
+      required: false,
+      min: "0",
+      max: "120",
     },
     {
       label: "Género",
@@ -230,6 +388,10 @@ export default function PatientCreateForm() {
           Los campos marcados con <span className="text-red-500">*</span> son
           obligatorios
         </p>
+        <p className="text-sm text-blue-600 mt-1">
+          <strong>Nota:</strong> Los campos "Edad" y "Fecha de nacimiento" se
+          calculan automáticamente. Al ingresar uno, el otro se actualizará.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -272,7 +434,10 @@ export default function PatientCreateForm() {
                   value={form[f.name]}
                   onChange={handleChange}
                   onBlur={handleBlur}
+                  onFocus={handleFocus}
                   placeholder={f.placeholder}
+                  min={f.min}
+                  max={f.max}
                   className={`input ${
                     isFieldInvalid(f.name)
                       ? "border-red-300 focus:border-red-500 focus:ring-red-200"
@@ -281,7 +446,8 @@ export default function PatientCreateForm() {
                 />
                 {isFieldInvalid(f.name) &&
                   f.name !== "email" &&
-                  f.name !== "phone" && (
+                  f.name !== "phone" &&
+                  f.name !== "age" && (
                     <p className="mt-1 text-xs text-red-500">
                       Este campo es obligatorio
                     </p>
@@ -294,6 +460,11 @@ export default function PatientCreateForm() {
                 {isFieldInvalid(f.name) && f.name === "phone" && form.phone && (
                   <p className="mt-1 text-xs text-red-500">
                     Formato de teléfono inválido (ej: +59170123456)
+                  </p>
+                )}
+                {isFieldInvalid(f.name) && f.name === "age" && form.age && (
+                  <p className="mt-1 text-xs text-red-500">
+                    Edad inválida. Debe ser un número entre 0 y 120.
                   </p>
                 )}
               </div>

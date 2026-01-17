@@ -133,7 +133,15 @@ export const useMedicalHistory = (patients = [], locationState) => {
   };
 
   const goNext = () => {
+    console.log("📍 goNext() EJECUTADO - step actual:", step);
     setLocalError("");
+
+    // Si estamos en el paso 5 (último paso), enviar el formulario
+    if (step === 5) {
+      console.log("⚠️ ENVIANDO FORMULARIO - Estamos en paso 5");
+      handleSubmit({ preventDefault: () => {} });
+      return;
+    }
 
     if (step === 1 && !patientId) {
       setLocalError("Se requiere un paciente para continuar.");
@@ -151,6 +159,7 @@ export const useMedicalHistory = (patients = [], locationState) => {
       }
     }
 
+    console.log("🔄 Avanzando de paso", step, "a", Math.min(5, step + 1));
     setStep((s) => Math.min(5, s + 1));
   };
 
@@ -210,15 +219,16 @@ export const useMedicalHistory = (patients = [], locationState) => {
   };
 
   const handleSubmit = (e) => {
+    console.log("🔴 handleSubmit EJECUTADO - step actual:", step);
     e.preventDefault();
     setLocalError("");
 
     // Evitar envíos accidentales si no estamos en el paso final
     if (step !== 5) {
-      // opcional: console.log para debugging
-      // console.log("Submit ignorado: no estamos en el paso 5", { step });
+      console.log("✅ Submit bloqueado: no estamos en el paso 5", { step });
       return;
     }
+    console.log("⚠️ ENVIANDO FORMULARIO - Estamos en paso 5");
 
     if (!specialtyId) {
       setLocalError("Falta el id de especialidad (specialtyId).");
