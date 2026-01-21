@@ -92,10 +92,10 @@ const ConsultationEntry = ({ entry, isExpanded, onToggle, isLast }) => {
             </div>
           )}
 
-          {/* 7. Nota subjetiva */}
+          {/* 7. Examen Fisico */}
           {entry.subjectiveNote && entry.subjectiveNote.trim() !== "" && (
             <InfoSection
-              title="📝 Nota Subjetiva"
+              title="📝 Examen Fisico"
               content={entry.subjectiveNote}
             />
           )}
