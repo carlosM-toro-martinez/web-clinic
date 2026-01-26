@@ -85,6 +85,7 @@ const FormHistory = ({ patients = [] }) => {
             doctorId={doctorId}
             initialNote={initialNote}
             onInitialNoteChange={setInitialNote}
+            onObjectiveNoteChange={setObjectiveNote}
             patientAge={patientAge}
             visitDate={visitDate}
             onVisitDateChange={setVisitDate}

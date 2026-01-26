@@ -15,6 +15,7 @@ const Step1PatientData = ({
   onVisitDateChange,
   specialty,
   doctor,
+  onObjectiveNoteChange,
 }) => {
   const navigate = useNavigate();
   const { patientHistory, setPatientHistory } = useContext(MainContext);
@@ -40,7 +41,7 @@ const Step1PatientData = ({
             <span className="text-gray-600">Médico: </span>
             <span className="font-medium">
               {`${toTitleCase(doctor?.firstName)} ${toTitleCase(
-                doctor?.lastName
+                doctor?.lastName,
               )}` || "No especificado"}
             </span>
           </div>
@@ -115,7 +116,7 @@ const Step1PatientData = ({
                   "es-BO",
                   {
                     timeZone: "UTC",
-                  }
+                  },
                 )}
               </div>
             </div>
@@ -145,7 +146,7 @@ const Step1PatientData = ({
         <textarea
           rows="3"
           value={initialNote}
-          onChange={(e) => onInitialNoteChange(e.target.value)}
+          onChange={(e) => onObjectiveNoteChange(e.target.value)}
           placeholder="Describa el motivo principal de la consulta, síntomas, duración..."
           className="w-full rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none min-h-[80px]"
         />
@@ -154,6 +155,18 @@ const Step1PatientData = ({
           [síntomas]"
         </div>
       </div>
+      {/* <div className="bg-white p-6 rounded-2xl border-2 border-gray-100 shadow-sm">
+        <label className="block text-sm font-semibold text-gray-900 mb-3">
+          👁️ Nota Objetiva / Examen Físico
+        </label>
+        <textarea
+          rows="4"
+          value={objectiveNote}
+          onChange={(e) => onObjectiveNoteChange(e.target.value)}
+          placeholder="Hallazgos del examen físico, sistemas afectados..."
+          className="w-full rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none min-h-[100px]"
+        />
+      </div> */}
     </section>
   );
 };

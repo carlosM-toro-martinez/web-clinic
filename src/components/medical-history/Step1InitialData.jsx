@@ -36,6 +36,18 @@ const Step1InitialData = ({
           className="input"
         />
       </div>
+      {/* <div className="bg-white p-6 rounded-2xl border-2 border-gray-100 shadow-sm">
+        <label className="block text-sm font-semibold text-gray-900 mb-3">
+          👁️ Nota Objetiva / Examen Físico
+        </label>
+        <textarea
+          rows="4"
+          value={objectiveNote}
+          onChange={(e) => onObjectiveNoteChange(e.target.value)}
+          placeholder="Hallazgos del examen físico, sistemas afectados..."
+          className="w-full rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none min-h-[100px]"
+        />
+      </div> */}
 
       {/* <div className="mt-3 text-sm text-[var(--text-muted)]">
         <strong>Especialidad:</strong> {specialtyId || "No proporcionada"}

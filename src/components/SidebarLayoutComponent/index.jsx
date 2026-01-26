@@ -13,8 +13,10 @@ import {
   ChevronRight,
   Menu,
   X,
+  MessageCircle,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { MainContext } from "../../context/MainContext";
 import logo from "../../assets/images/Logo.png";
 import { useLogout } from "../../hocks/useLogout";
 
@@ -24,6 +26,7 @@ const menuItems = [
   { label: "Pacientes", path: "/pacientes", icon: Users },
   { label: "Citas", path: "/citas", icon: CalendarDays },
   { label: "Consultas", path: "/consultas", icon: ClipboardList },
+  { label: "Chats", path: "/chats", icon: MessageCircle },
   { label: "Caja", path: "/caja", icon: BriefcaseMedical },
   { label: "Especialidades", path: "/especialidades", icon: FileText },
   { label: "Reportes", path: "/reportes", icon: Activity },
@@ -31,6 +34,9 @@ const menuItems = [
 
 function SidebarLayoutComponent() {
   const { logout } = useLogout();
+  const { newMessageNotification, user } = useContext(MainContext);
+  console.log(user.role);
+
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
@@ -107,10 +113,10 @@ function SidebarLayoutComponent() {
         >
           {!collapsed && (
             <div className="flex items-center gap-2">
-              <h1 class="text-1xl md:text-2xl font-extrabold tracking-tight">
-                <span class="text-[var(--color-text-primary)]">Nova</span>
+              <h1 className="text-1xl md:text-2xl font-extrabold tracking-tight">
+                <span className="text-[var(--color-text-primary)]">Nova</span>
                 <span
-                  class="ml-1
+                  className="ml-1
            text-[var(--color-primary)]"
                 >
                   Med
@@ -143,12 +149,17 @@ function SidebarLayoutComponent() {
         </div>
 
         <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-          {menuItems.map(({ label, path, icon: Icon }) => (
-            <NavLink
-              key={path}
-              to={path}
-              className={({ isActive }) =>
-                `
+          {menuItems.map(({ label, path, icon: Icon }) => {
+            const hasNotification = label === "Chats" && newMessageNotification;
+
+            return (
+              <>
+                {label === "Chats" && user.role !== "ADMIN" ? null : (
+                  <NavLink
+                    key={path}
+                    to={path}
+                    className={({ isActive }) =>
+                      `
                   group
                   flex items-center
                   rounded-xl
@@ -157,6 +168,7 @@ function SidebarLayoutComponent() {
                   transition-all duration-200
                   hover:shadow-md
                   border border-transparent
+                  relative
                   ${
                     isActive
                       ? "bg-[var(--color-accent-blue-light)] text-[var(--color-primary)] border-[var(--color-primary)] shadow-sm"
@@ -164,19 +176,22 @@ function SidebarLayoutComponent() {
                   }
                   ${collapsed ? "justify-center" : ""}
                 `
-              }
-            >
-              <div className="relative">
-                <Icon
-                  size={20}
-                  className={`
+                    }
+                  >
+                    <div className="relative">
+                      <Icon
+                        size={20}
+                        className={`
                     transition-transform duration-200
                     ${collapsed ? "" : "group-hover:scale-110"}
                   `}
-                />
-                {!collapsed && (
-                  <div
-                    className={`
+                      />
+                      {hasNotification && (
+                        <div className="absolute -top-2 -right-2 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                      )}
+                      {!collapsed && (
+                        <div
+                          className={`
                     absolute -top-1 -right-1 w-2 h-2 rounded-full
                     transition-all duration-200
                     ${
@@ -185,23 +200,26 @@ function SidebarLayoutComponent() {
                         : "bg-transparent scale-0"
                     }
                   `}
-                  />
+                        />
+                      )}
+                    </div>
+
+                    {!collapsed && (
+                      <span className="ml-3 transition-all duration-200 font-medium">
+                        {label}
+                      </span>
+                    )}
+
+                    {collapsed && (
+                      <div className="absolute left-full ml-2 px-2 py-1 bg-[var(--color-text-primary)] text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 whitespace-nowrap">
+                        {label}
+                      </div>
+                    )}
+                  </NavLink>
                 )}
-              </div>
-
-              {!collapsed && (
-                <span className="ml-3 transition-all duration-200 font-medium">
-                  {label}
-                </span>
-              )}
-
-              {collapsed && (
-                <div className="absolute left-full ml-2 px-2 py-1 bg-[var(--color-text-primary)] text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 whitespace-nowrap">
-                  {label}
-                </div>
-              )}
-            </NavLink>
-          ))}
+              </>
+            );
+          })}
         </nav>
 
         <div

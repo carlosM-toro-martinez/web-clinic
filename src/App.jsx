@@ -25,6 +25,7 @@ import ReportsCaja from "./pages/Reports/Caja";
 import ReportsDiagnosticos from "./pages/Reports/Diagnosticos";
 import ReportsCitas from "./pages/Reports/Citas";
 import ReportsPacientes from "./pages/Reports/Pacientes";
+import Chats from "./pages/chats/Chats";
 
 function App() {
   const queryClient = new QueryClient();
@@ -225,6 +226,14 @@ function App() {
               element={
                 <ProtectedRoute roles={["ADMIN", "RECEPTIONIST"]}>
                   <MovimientoCaja />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chats"
+              element={
+                <ProtectedRoute roles={["ADMIN", "RECEPTIONIST"]}>
+                  <Chats />
                 </ProtectedRoute>
               }
             />

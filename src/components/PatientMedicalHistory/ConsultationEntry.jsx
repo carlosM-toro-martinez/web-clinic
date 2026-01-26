@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import ConsultationHeader from "./ConsultationHeader";
 import ConsultationBasicInfo from "./ConsultationBasicInfo";
 import DiagnosisList from "./DiagnosisList";
@@ -7,12 +7,53 @@ import PrescriptionList from "./PrescriptionList";
 import AdditionalInfo from "./AdditionalInfo";
 import InfoSection from "./InfoSection";
 import { formatDateTime } from "../../utils/consultationFormatter";
+import { useReactToPrint } from "react-to-print";
+import PrescriptionInput from "../medical-history/PrescriptionInput";
+import PrintablePrescription from "../medical-history/PrintablePrescription";
 
-const ConsultationEntry = ({ entry, isExpanded, onToggle, isLast }) => {
+const ConsultationEntry = ({
+  entry,
+  specialtyHistory,
+  isExpanded,
+  onToggle,
+  isLast,
+}) => {
   // Obtener signos vitales
   const vitals = entry.vitals || {};
+  const prescriptionRef = useRef();
 
-  // Comprobar si hay información adicional para mostrar
+  const handlePrint = useReactToPrint({
+    contentRef: prescriptionRef,
+    pageStyle: `
+      @page {
+        size: carta;
+      }
+      @media print {
+        body {
+          -webkit-print-color-adjust: exact;
+        }
+        .prescription-item {
+          page-break-inside: avoid;
+        }
+        .no-print {
+          display: none !important;
+        }
+
+        @page {
+          margin: 0;
+        }
+        
+        @page :first {
+          margin-top: 0;
+        }
+        
+        @page :last {
+          margin-bottom: 0;
+        }
+      }
+    `,
+  });
+
   const hasExtendedInfo = () => {
     const extendedFields = [
       "pathologicalHistory",
@@ -42,19 +83,29 @@ const ConsultationEntry = ({ entry, isExpanded, onToggle, isLast }) => {
           entry[field] &&
           (typeof entry[field] === "string"
             ? entry[field].trim() !== ""
-            : entry[field] !== null && entry[field] !== undefined)
+            : entry[field] !== null && entry[field] !== undefined),
       ) ||
       Object.keys(vitals).some(
         (key) =>
           vitals[key] !== null &&
           vitals[key] !== undefined &&
-          vitals[key] !== ""
+          vitals[key] !== "",
       )
     );
   };
 
   return (
     <div className={`card ${!isLast ? "mb-4" : ""}`}>
+      <PrintablePrescription
+        prescriptionRef={prescriptionRef}
+        prescriptions={entry.prescriptions}
+        patient={specialtyHistory.patient}
+        doctor={entry.doctor}
+        specialty={specialtyHistory.specialty}
+      />
+      <div className="mb-6">
+        <PrescriptionInput onAdd={entry.prescriptions} />
+      </div>
       {/* Header de la consulta */}
       <ConsultationHeader
         entry={entry}
@@ -70,18 +121,22 @@ const ConsultationEntry = ({ entry, isExpanded, onToggle, isLast }) => {
         <div className="mt-6 space-y-6 border-t border-border pt-6">
           {/* Información básica de la consulta */}
           <ConsultationBasicInfo entry={entry} />
-
           {/* 1. Motivo de consulta */}
           {entry.chiefComplaint && entry.chiefComplaint.trim() !== "" && (
             <InfoSection
               title="🩺 Motivo de Consulta"
+              content={entry.objectiveNote}
+            />
+          )}
+          {entry.chiefComplaint && entry.chiefComplaint.trim() !== "" && (
+            <InfoSection
+              title="Detalles Motivo de Consulta"
               content={entry.chiefComplaint}
             />
           )}
 
           {/* 2-5: Información adicional (antecedentes, hábitos, etc.) */}
           <AdditionalInfo entry={entry} />
-
           {/* 6. Signos vitales y antropometría */}
           {Object.keys(vitals).length > 0 && (
             <div>
@@ -91,7 +146,6 @@ const ConsultationEntry = ({ entry, isExpanded, onToggle, isLast }) => {
               <VitalsDisplay vitals={vitals} />
             </div>
           )}
-
           {/* 7. Examen Fisico */}
           {entry.subjectiveNote && entry.subjectiveNote.trim() !== "" && (
             <InfoSection
@@ -99,9 +153,7 @@ const ConsultationEntry = ({ entry, isExpanded, onToggle, isLast }) => {
               content={entry.subjectiveNote}
             />
           )}
-
           {/* 8-9 ya están en AdditionalInfo (Estudios complementarios) */}
-
           {/* 10. Nota objetiva / Examen físico */}
           {entry.objectiveNote && entry.objectiveNote.trim() !== "" && (
             <InfoSection
@@ -109,7 +161,6 @@ const ConsultationEntry = ({ entry, isExpanded, onToggle, isLast }) => {
               content={entry.objectiveNote}
             />
           )}
-
           {/* Impresión diagnóstica - Mantengo esto aunque no esté en el orden especificado */}
           {entry.assessment && entry.assessment.trim() !== "" && (
             <InfoSection
@@ -117,7 +168,6 @@ const ConsultationEntry = ({ entry, isExpanded, onToggle, isLast }) => {
               content={entry.assessment}
             />
           )}
-
           {/* Diagnósticos - Mantengo esto aunque no esté en el orden especificado */}
           {entry.diagnoses?.length > 0 && (
             <div>
@@ -163,25 +213,43 @@ const ConsultationEntry = ({ entry, isExpanded, onToggle, isLast }) => {
               </div>
             </div>
           )}
-
           {/* 11. Plan */}
           {entry.plan && entry.plan.trim() !== "" && (
             <InfoSection title="📋 Plan de Tratamiento" content={entry.plan} />
           )}
-
           {/* 12. Tratamiento farmacológico */}
           {entry.prescriptions?.length > 0 && (
             <div>
-              <h4 className="font-semibold text-text-primary mb-3 flex items-center gap-2">
-                💊 Tratamiento Farmacológico
-              </h4>
+              <div className="flex flex-wrap justify-between">
+                <h4 className="font-semibold text-text-primary mb-3 flex items-center gap-2">
+                  💊 Tratamiento Farmacológico
+                </h4>
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="flex cursor-pointer items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors text-sm font-semibold"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                    />
+                  </svg>
+                  Reimprimir Receta
+                </button>
+              </div>
               <PrescriptionList prescriptions={entry.prescriptions} />
             </div>
           )}
-
           {/* Los campos 13-16 (Tratamiento no farmacológico, Estudios solicitados, 
               Interconsultas, Control y seguimiento) ya están en AdditionalInfo */}
-
           {/* Información de sistema */}
           <div className="pt-4 border-t border-border">
             <div className="text-xs text-text-subtle">
