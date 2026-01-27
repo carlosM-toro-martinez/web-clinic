@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
+Dockerfile
+docker-compose.yml
+nginx-react.conf
