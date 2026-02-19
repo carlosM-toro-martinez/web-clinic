@@ -1,8 +1,8 @@
 import React from "react";
-import { MessageCircle, Clock } from "lucide-react";
 
-function ChatCard({ chat, onClick, isSelected }) {
+function ChatCard({ chat, onClick, isSelected, isUnread }) {
   const formatTime = (timestamp) => {
+    if (!timestamp) return "";
     const date = new Date(timestamp);
     const now = new Date();
     const diffInHours = (now - date) / (1000 * 60 * 60);
@@ -26,6 +26,8 @@ function ChatCard({ chat, onClick, isSelected }) {
 
   const lastMessageText = chat.lastMessage?.text || "Sin mensajes";
   const lastMessageTime = formatTime(chat.lastMessage?.timestamp);
+  const unreadCount = Number(chat.unreadCount || 0);
+  const showUnread = !isSelected && (unreadCount > 0 || isUnread);
 
   return (
     <div
@@ -33,7 +35,9 @@ function ChatCard({ chat, onClick, isSelected }) {
       className={`p-4 border-b cursor-pointer transition-colors ${
         isSelected
           ? "bg-[var(--color-primary)] text-white"
-          : "bg-[var(--color-background)] hover:bg-[var(--color-hover)] text-[var(--text-primary)]"
+          : `bg-[var(--color-background)] hover:bg-[var(--color-hover)] text-[var(--text-primary)] ${
+              showUnread ? "border-l-4 border-l-[var(--color-primary)]" : ""
+            }`
       }`}
     >
       <div className="flex items-center justify-between mb-2">
@@ -47,15 +51,15 @@ function ChatCard({ chat, onClick, isSelected }) {
         >
           {lastMessageText}
         </p>
-        {chat.isNew && (
+        {showUnread && (
           <span
-            className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-sm font-bold animate-pulse ${
+            className={`inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded-full text-xs font-bold ${
               isSelected
                 ? "bg-white text-[var(--color-primary)]"
-                : "bg-red-500 text-white"
+                : "bg-[var(--color-primary)] text-white"
             }`}
           >
-            !
+            {unreadCount > 0 ? unreadCount : "•"}
           </span>
         )}
       </div>

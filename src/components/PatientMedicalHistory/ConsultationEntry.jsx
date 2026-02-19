@@ -98,7 +98,7 @@ const ConsultationEntry = ({
     <div className={`card ${!isLast ? "mb-4" : ""}`}>
       <PrintablePrescription
         prescriptionRef={prescriptionRef}
-        prescriptions={entry.prescriptions}
+        prescriptions={entry.prescriptions[0]?.medications}
         patient={specialtyHistory.patient}
         doctor={entry.doctor}
         specialty={specialtyHistory.specialty}

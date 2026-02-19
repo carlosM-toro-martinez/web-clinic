@@ -35,7 +35,7 @@ const request = async (
   method,
   isFile,
   tenantId = "clinic-default",
-  token = null
+  token = null,
 ) => {
   const options = buildOptions(payload, method, isFile, tenantId, token);
   const response = await fetch(endpoint, options);
@@ -45,7 +45,6 @@ const request = async (
       const data = await response.json();
       return data;
     } catch (error) {
-      console.log(response);
       return error;
     }
   } else {
@@ -58,7 +57,7 @@ export const post = async (
   payload,
   tenantId = "clinic-default",
   isFile = false,
-  token = null
+  token = null,
 ) => request(endpoint, payload, "POST", isFile, tenantId, token);
 
 export const get = async (
@@ -66,7 +65,7 @@ export const get = async (
   payload,
   tenantId = "clinic-default",
   isFile = false,
-  token = null
+  token = null,
 ) => request(endpoint, payload, "GET", isFile, tenantId, token);
 
 export const put = async (
@@ -74,7 +73,7 @@ export const put = async (
   payload,
   tenantId = "clinic-default",
   isFile = false,
-  token = null
+  token = null,
 ) => request(endpoint, payload, "PUT", isFile, tenantId, token);
 
 export const remove = async (
@@ -82,5 +81,5 @@ export const remove = async (
   payload,
   tenantId = "clinic-default",
   isFile = false,
-  token = null
+  token = null,
 ) => request(endpoint, payload, "DELETE", isFile, tenantId, token);

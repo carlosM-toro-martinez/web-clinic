@@ -7,7 +7,6 @@ const SpecialtyHistory = ({
   setActiveEntry,
 }) => {
   const { specialty, entries } = specialtyHistory;
-  console.log(specialtyHistory);
 
   return (
     <div className="space-y-6">

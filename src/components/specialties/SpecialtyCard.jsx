@@ -92,16 +92,16 @@ export default function SpecialtyCard({ specialty, doctors, onUpdate }) {
   const getFeeStats = () => {
     const initialFees = specialty.fees.filter((f) => f.feeType === "INITIAL");
     const followUpFees = specialty.fees.filter(
-      (f) => f.feeType === "FOLLOW_UP"
+      (f) => f.feeType === "FOLLOW_UP",
     );
 
     const initialTotal = initialFees.reduce(
       (sum, fee) => sum + parseFloat(fee.amount),
-      0
+      0,
     );
     const followUpTotal = followUpFees.reduce(
       (sum, fee) => sum + parseFloat(fee.amount),
-      0
+      0,
     );
 
     return {
@@ -126,7 +126,6 @@ export default function SpecialtyCard({ specialty, doctors, onUpdate }) {
 
   const feeStats = getFeeStats();
   const scheduleStats = getScheduleStats();
-  console.log(specialty);
 
   return (
     <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 mb-4">
@@ -208,10 +207,10 @@ export default function SpecialtyCard({ specialty, doctors, onUpdate }) {
                           {fee.feeType === "INITIAL"
                             ? "Consulta inicial"
                             : fee.feeType === "FOLLOW_UP"
-                            ? "Control de seguimiento"
-                            : fee.feeType === "EMERGENCY"
-                            ? "Emergencia"
-                            : "Procedimiento"}
+                              ? "Control de seguimiento"
+                              : fee.feeType === "EMERGENCY"
+                                ? "Emergencia"
+                                : "Procedimiento"}
                         </p>
                         <p className="text-blue-700 font-semibold text-lg">
                           {fee.amount} {fee.currency || "BOB"}
@@ -293,14 +292,14 @@ export default function SpecialtyCard({ specialty, doctors, onUpdate }) {
                       });
                       return acc;
                     },
-                    {}
+                    {},
                   );
 
                   // Ordenar slots por hora de inicio y agrupar rangos continuos
                   Object.keys(grouped).forEach((key) => {
                     const group = grouped[key];
                     group.slots.sort((a, b) =>
-                      a.startTime.localeCompare(b.startTime)
+                      a.startTime.localeCompare(b.startTime),
                     );
 
                     // Combinar slots consecutivos

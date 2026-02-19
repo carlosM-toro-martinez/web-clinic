@@ -7,19 +7,67 @@ import ChatWindow from "./ChatWindow";
 
 function ChatsListComponent() {
   const [selectedChat, setSelectedChat] = useState(null);
-  const { newMessageNotification, clearNewMessageNotification } =
-    useContext(MainContext);
+  const [unreadById, setUnreadById] = useState({});
+  const {
+    newMessageNotification,
+    clearNewMessageNotification,
+    clearAllMessageNotifications,
+  } = useContext(MainContext);
   const { chats, isLoading, isError, error, refetch } = useWhatsappChats();
 
-  useEffect(() => {
-    if (newMessageNotification) {
-      console.log("📭 Limpiando notificación al entrar a /chats");
-      clearNewMessageNotification(newMessageNotification.patientId);
-    }
-  }, []);
+  const unreadTotal = chats.reduce((total, chat) => {
+    const count = Number(chat.unreadCount || 0);
+    const localUnread =
+      unreadById[chat.patientId] || unreadById[chat.patientPhone] ? 1 : 0;
+    return total + Math.max(count, localUnread);
+  }, 0);
 
   useEffect(() => {
-    refetch();
+    if (!newMessageNotification?.patientId) return;
+    setUnreadById((prev) => ({
+      ...prev,
+      [newMessageNotification.patientId]: true,
+      ...(newMessageNotification.patientPhone
+        ? { [newMessageNotification.patientPhone]: true }
+        : {}),
+    }));
+  }, [newMessageNotification]);
+
+  useEffect(() => {
+    clearAllMessageNotifications();
+  }, [clearAllMessageNotifications]);
+
+  useEffect(() => {
+    if (!selectedChat) return;
+    setUnreadById((prev) => {
+      if (!prev[selectedChat.patientId] && !prev[selectedChat.patientPhone]) {
+        return prev;
+      }
+      const next = { ...prev };
+      delete next[selectedChat.patientId];
+      if (selectedChat.patientPhone) {
+        delete next[selectedChat.patientPhone];
+      }
+      return next;
+    });
+    if (
+      newMessageNotification?.patientId === selectedChat.patientId ||
+      newMessageNotification?.patientId === selectedChat.patientPhone
+    ) {
+      clearNewMessageNotification(
+        selectedChat.patientPhone || selectedChat.patientId,
+      );
+    }
+  }, [selectedChat, newMessageNotification, clearNewMessageNotification]);
+
+  useEffect(() => {
+    if (!selectedChat?.patientId) return;
+    const updated = chats.find(
+      (chat) => chat.patientId === selectedChat.patientId,
+    );
+    if (updated && updated !== selectedChat) {
+      setSelectedChat(updated);
+    }
   }, [chats, selectedChat]);
 
   const handleRefresh = () => {
@@ -32,11 +80,20 @@ function ChatsListComponent() {
 
   const handleChatSelected = (chat) => {
     setSelectedChat(chat);
+    setUnreadById((prev) => {
+      if (!prev[chat.patientId] && !prev[chat.patientPhone]) return prev;
+      const next = { ...prev };
+      delete next[chat.patientId];
+      if (chat.patientPhone) {
+        delete next[chat.patientPhone];
+      }
+      return next;
+    });
     if (
       newMessageNotification?.patientId === chat.patientId ||
       newMessageNotification?.patientId === chat.patientPhone
     ) {
-      clearNewMessageNotification(chat.patientId || chat.patientPhone);
+      clearNewMessageNotification(chat.patientPhone || chat.patientId);
     }
   };
 
@@ -79,6 +136,11 @@ function ChatsListComponent() {
               <h1 className="text-xl font-bold text-[var(--text-primary)]">
                 Chats
               </h1>
+              {unreadTotal > 0 && (
+                <span className="inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded-full text-xs font-bold bg-[var(--color-primary)] text-white">
+                  {unreadTotal}
+                </span>
+              )}
             </div>
             <button
               onClick={handleRefresh}
@@ -129,6 +191,9 @@ function ChatsListComponent() {
                 chat={chat}
                 onClick={() => handleChatSelected(chat)}
                 isSelected={selectedChat?.patientId === chat.patientId}
+                isUnread={Boolean(
+                  unreadById[chat.patientId] || unreadById[chat.patientPhone],
+                )}
               />
             ))
           )}

@@ -33,8 +33,6 @@ function ReportsPacientes() {
     );
   }
 
-  console.log(data.data);
-
   return (
     <LayoutComponent>
       <div>

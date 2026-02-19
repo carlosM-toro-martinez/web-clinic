@@ -6,7 +6,7 @@ import appointmentAddService from "../async/services/post/appointmentAddService"
 export const useAppointmentForm = (patients, specialties) => {
   const { user, cashRegister } = useContext(MainContext);
   const { mutate, isPending, message, type, reset } = useApiMutation(
-    appointmentAddService
+    appointmentAddService,
   );
 
   const [formState, setFormState] = useState({
@@ -42,7 +42,7 @@ export const useAppointmentForm = (patients, specialties) => {
     if (!formState.selectedSpecialty || !formState.selectedDate) return [];
 
     return formState.selectedSpecialty.schedules.filter(
-      (s) => s.isActive && s.dayOfWeek === getDayOfWeek(formState.selectedDate)
+      (s) => s.isActive && s.dayOfWeek === getDayOfWeek(formState.selectedDate),
     );
   }, [formState.selectedSpecialty, formState.selectedDate]);
 
@@ -108,7 +108,6 @@ export const useAppointmentForm = (patients, specialties) => {
       amount: reserva,
       description: "Pago por consulta",
     };
-    console.log("Submitting appointment with payload:", payload);
 
     mutate(payload);
   };

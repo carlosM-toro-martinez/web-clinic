@@ -16,6 +16,7 @@ const Step1PatientData = ({
   specialty,
   doctor,
   onObjectiveNoteChange,
+  objectiveNote,
 }) => {
   const navigate = useNavigate();
   const { patientHistory, setPatientHistory } = useContext(MainContext);
@@ -145,7 +146,7 @@ const Step1PatientData = ({
         </label>
         <textarea
           rows="3"
-          value={initialNote}
+          value={objectiveNote}
           onChange={(e) => onObjectiveNoteChange(e.target.value)}
           placeholder="Describa el motivo principal de la consulta, síntomas, duración..."
           className="w-full rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none min-h-[80px]"

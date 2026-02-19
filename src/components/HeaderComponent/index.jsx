@@ -37,7 +37,6 @@ function HeaderComponent() {
   };
 
   const handleLogout = () => {
-    console.log("Cerrando sesión...");
     setIsDropdownOpen(false);
   };
 

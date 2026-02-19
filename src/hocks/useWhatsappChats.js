@@ -4,33 +4,28 @@ import whatsappService from "../async/services/get/whatsappService";
 import { MainContext } from "../context/MainContext";
 
 export const useWhatsappChats = () => {
-  const { newMessageNotification, triggerChatRefetch } =
-    useContext(MainContext);
+  const { newMessageNotification } = useContext(MainContext);
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["whatsappChats"],
     queryFn: whatsappService,
-    refetchInterval: 30000,
+    refetchInterval: 15000,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
   });
 
   useEffect(() => {
     console.log("Refetch disparado desde socket");
     refetch();
-  }, [newMessageNotification]);
+  }, [newMessageNotification, refetch]);
 
   const sortedChats = useMemo(() => {
     if (!data || !Array.isArray(data?.data)) return [];
 
     return [...data?.data]
       .map((chat) => {
-        const isNew =
-          (newMessageNotification?.patientId === chat.patientId ||
-            newMessageNotification?.patientId === chat.patientPhone) &&
-          newMessageNotification?.timestamp > Date.now() - 5000;
-
         return {
           ...chat,
-          isNew,
         };
       })
       .sort((a, b) => {

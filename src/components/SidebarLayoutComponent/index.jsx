@@ -35,7 +35,6 @@ const menuItems = [
 function SidebarLayoutComponent() {
   const { logout } = useLogout();
   const { newMessageNotification, user } = useContext(MainContext);
-  console.log(user.role);
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);

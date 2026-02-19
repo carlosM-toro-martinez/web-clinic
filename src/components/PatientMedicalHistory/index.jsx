@@ -4,7 +4,6 @@ import SpecialtyList from "./SpecialtyList";
 import SpecialtyHistory from "./SpecialtyHistory";
 
 const PatientMedicalHistory = ({ medicalHistory }) => {
-  console.log("Medical History:", medicalHistory);
   const [activeSpecialty, setActiveSpecialty] = useState(null);
   const [activeEntry, setActiveEntry] = useState(null);
 

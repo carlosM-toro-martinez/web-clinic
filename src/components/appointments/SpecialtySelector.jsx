@@ -11,9 +11,8 @@ function SpecialtySelector({
       specialty.schedules &&
       specialty.schedules.length > 0 &&
       specialty.fees &&
-      specialty.fees.length > 0
+      specialty.fees.length > 0,
   );
-  console.log(validSpecialties);
 
   return (
     <div>

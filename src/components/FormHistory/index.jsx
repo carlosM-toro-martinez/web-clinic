@@ -91,6 +91,7 @@ const FormHistory = ({ patients = [] }) => {
             onVisitDateChange={setVisitDate}
             specialty={specialty}
             doctor={doctor}
+            objectiveNote={objectiveNote}
           />
         );
       case 2:
@@ -148,7 +149,6 @@ const FormHistory = ({ patients = [] }) => {
         return null;
     }
   };
-  console.log(step);
 
   const handleFormKeyDown = (e) => {
     // Prevenir que se envíe el formulario si presionas Enter en un input y no estamos en paso 5

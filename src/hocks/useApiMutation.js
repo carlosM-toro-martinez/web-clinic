@@ -12,12 +12,10 @@ export default function useApiMutation(apiFunction, options = {}) {
 
   const mutation = useMutation({
     mutationFn: async (payload) => {
-      console.log(idEdit);
-
       const response = await apiFunction(
         payload,
         token,
-        idEdit ? idEdit : null
+        idEdit ? idEdit : null,
       );
       return response;
     },
@@ -35,7 +33,7 @@ export default function useApiMutation(apiFunction, options = {}) {
       setMessage(
         error?.response?.data?.message ||
           error?.message ||
-          "Ocurrió un error inesperado "
+          "Ocurrió un error inesperado ",
       );
 
       if (options.onError) {

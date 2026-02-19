@@ -34,6 +34,22 @@ export default function WorkersTable({ workers }) {
     navigate("/trabajador/editar", { state: { worker } });
   };
 
+  const renderSpecialties = (worker) => {
+    if (worker.role !== "DOCTOR") {
+      return "—";
+    }
+
+    const specialties = worker.specialties || [];
+    if (specialties.length === 0) {
+      return "Sin especialidades";
+    }
+
+    return specialties
+      .map((item) => item?.specialty?.name || item?.name)
+      .filter(Boolean)
+      .join(", ");
+  };
+
   return (
     <section>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-5 gap-3">
@@ -71,6 +87,12 @@ export default function WorkersTable({ workers }) {
                 Nombre
               </th>
               <th className="p-4 text-sm font-semibold text-[color:var(--text-muted)]">
+                Rol
+              </th>
+              <th className="p-4 text-sm font-semibold text-[color:var(--text-muted)]">
+                Especialidades
+              </th>
+              <th className="p-4 text-sm font-semibold text-[color:var(--text-muted)]">
                 Teléfono
               </th>
               <th className="p-4 text-sm font-semibold text-[color:var(--text-muted)] text-right">
@@ -94,6 +116,12 @@ export default function WorkersTable({ workers }) {
                 >
                   <td className="p-4 text-[color:var(--color-text-primary)] font-medium">
                     {w.firstName?.toUpperCase()} {w.lastName?.toUpperCase()}
+                  </td>
+                  <td className="p-4 text-[color:var(--color-text-secondary)] uppercase">
+                    {w.role || "—"}
+                  </td>
+                  <td className="p-4 text-[color:var(--color-text-secondary)]">
+                    {renderSpecialties(w)}
                   </td>
                   <td className="p-4 text-[color:var(--color-text-secondary)]">
                     {w.phone}
@@ -134,7 +162,7 @@ export default function WorkersTable({ workers }) {
             ) : (
               <tr>
                 <td
-                  colSpan="5"
+                  colSpan="7"
                   className="text-center p-6 text-[color:var(--color-text-placeholder)]"
                 >
                   No se encontraron trabajadores.

@@ -1,5 +1,5 @@
 import React from "react";
-import endovelText from "../../assets/images/endovelText.png";
+import endovelText from "../../assets/images/endovelRecet.png";
 
 const PrintablePrescription = ({
   prescriptionRef,
@@ -67,8 +67,7 @@ const PrintablePrescription = ({
           <div
             style={{
               position: "relative",
-              marginTop: "-60px",
-              marginLeft: "-20px",
+              marginLeft: "-10px",
             }}
           >
             <img src={endovelText} alt="endovelText" width="200px" />
@@ -96,9 +95,9 @@ const PrintablePrescription = ({
           <div style={{ fontSize: "12px", marginBottom: "3px" }}>
             {specialty?.name || "Endocrinóloga"}
           </div>
-          <div style={{ fontSize: "12px" }}>
+          {/* <div style={{ fontSize: "12px" }}>
             Matrícula Nac.: {doctor?.ciNumber || "155207"}
-          </div>
+          </div> */}
         </div>
         <div
           style={{
@@ -128,8 +127,8 @@ const PrintablePrescription = ({
               {patient?.gender === "M"
                 ? "Masculino"
                 : patient?.gender === "F"
-                ? "Femenino"
-                : "Femenino"}
+                  ? "Femenino"
+                  : "Femenino"}
             </div>
           </div>
 

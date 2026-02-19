@@ -49,7 +49,6 @@ export default function PatientsTable({ patients }) {
   const handleAppointments = (patient) => {
     navigate(`/pacientes/${patient.id}/citas`);
   };
-  console.log(filteredPatients);
 
   return (
     <section>

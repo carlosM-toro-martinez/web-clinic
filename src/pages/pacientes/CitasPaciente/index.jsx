@@ -7,7 +7,6 @@ import { useParams } from "react-router-dom";
 
 function CitasPaciente() {
   const { id: patientId } = useParams();
-  console.log(patientId);
 
   const {
     data: appointmentsPatientResponse,
@@ -83,7 +82,7 @@ function CitasPaciente() {
   // Obtener citas de hoy
   const today = new Date().toISOString().split("T")[0];
   const todayAppointments = appointments.filter(
-    (appt) => appt.scheduledStart.split("T")[0] === today
+    (appt) => appt.scheduledStart.split("T")[0] === today,
   );
 
   if (isLoadingAppointmentsPatient) {

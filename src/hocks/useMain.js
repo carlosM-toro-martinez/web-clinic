@@ -17,7 +17,6 @@ function useMain() {
   // Función para reproducir sonido de notificación
   const playNotificationSound = useCallback(() => {
     try {
-      console.log("🔊 REPRODUCIENDO sonido de notificación");
       const audioContext = new (
         window.AudioContext || window.webkitAudioContext
       )();
@@ -38,8 +37,6 @@ function useMain() {
 
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.5);
-
-      console.log("✅ Sonido reproducido exitosamente");
     } catch (error) {
       console.error("❌ Error al reproducir sonido:", error);
     }
@@ -71,10 +68,7 @@ function useMain() {
     localStorage.removeItem("token");
   }, []);
 
-  // Función para hacer refetch de chats (la vamos a pasar al contexto)
-  const triggerChatRefetch = useCallback(() => {
-    console.log("Refetch de chats disparado por socket");
-  }, []);
+  const triggerChatRefetch = useCallback(() => {}, []);
 
   useEffect(() => {
     const validateToken = async (storedToken) => {
@@ -124,11 +118,7 @@ function useMain() {
   // Socket.io connection para notificaciones de mensajes
   useEffect(() => {
     if (auth && token) {
-      console.log("Iniciando conexión de socket...");
-
-      // Desconectar socket anterior si existe
       if (socketRef.current) {
-        console.log("Desconectando socket anterior");
         socketRef.current.disconnect();
       }
 
@@ -143,11 +133,6 @@ function useMain() {
       });
 
       socketRef.current.on("connect", () => {
-        console.log("✅ Socket CONECTADO al namespace de operadores");
-        console.log("Socket ID:", socketRef.current.id);
-        console.log("Token enviado:", token.substring(0, 20) + "...");
-
-        // Intentar suscribirse/registrarse con el servidor
         socketRef.current.emit(
           "register",
           {
@@ -159,11 +144,7 @@ function useMain() {
           },
         );
 
-        // Escuchar TODOS los eventos para debugging - MÁS DETALLADO
         socketRef.current.onAny((event, ...args) => {
-          console.log(`📡 *** EVENTO RECIBIDO: "${event}" *** Datos:`, args);
-
-          // Si parece un evento de mensaje, procesar
           if (
             event.toLowerCase().includes("message") ||
             event.toLowerCase().includes("chat") ||
@@ -187,6 +168,8 @@ function useMain() {
               payload?.customer_id ||
               payload?.senderId ||
               payload?.sender_id;
+            const patientPhone =
+              payload?.patientPhone || payload?.patient_phone;
 
             if (patientId) {
               console.log(
@@ -201,6 +184,7 @@ function useMain() {
               console.log("🔔 ACTUALIZANDO newMessageNotification...");
               setNewMessageNotification({
                 patientId: patientId,
+                patientPhone: patientPhone,
                 timestamp: new Date().getTime(),
               });
 
@@ -218,7 +202,8 @@ function useMain() {
 
         // Marcar como notificación sin leer
         setNewMessageNotification({
-          patientId: payload.patientId,
+          patientId: payload.patientId || payload.patientPhone,
+          patientPhone: payload.patientPhone,
           timestamp: new Date().getTime(),
         });
 
@@ -261,13 +246,18 @@ function useMain() {
     }
   }, [auth, token, triggerChatRefetch, playNotificationSound]);
 
-  const clearNewMessageNotification = useCallback((patientId) => {
+  const clearNewMessageNotification = useCallback((idOrPhone) => {
     setNewMessageNotification((prev) => {
-      if (prev?.patientId === patientId) {
+      if (!prev) return prev;
+      if (prev.patientId === idOrPhone || prev.patientPhone === idOrPhone) {
         return null;
       }
       return prev;
     });
+  }, []);
+
+  const clearAllMessageNotifications = useCallback(() => {
+    setNewMessageNotification(null);
   }, []);
 
   return {
@@ -288,6 +278,7 @@ function useMain() {
     logout,
     newMessageNotification,
     clearNewMessageNotification,
+    clearAllMessageNotifications,
     socket: socketRef.current,
     triggerChatRefetch,
   };

@@ -12,11 +12,10 @@ export const logout = () => {
         new StorageEvent("storage", {
           key: "logout",
           newValue: Date.now().toString(),
-        })
+        }),
       );
     }
 
-    console.log("Sesión cerrada exitosamente");
     return { success: true, message: "Sesión cerrada exitosamente" };
   } catch (error) {
     console.error("Error al cerrar sesión:", error);
@@ -74,6 +73,5 @@ export const clearAppData = () => {
     }
   });
 
-  console.log("Datos de aplicación limpiados, sesión mantenida");
   return { success: true, message: "Datos de aplicación limpiados" };
 };
