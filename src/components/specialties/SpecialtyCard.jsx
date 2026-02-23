@@ -2,6 +2,8 @@ import React, { useState, useContext } from "react";
 import useApiMutation from "../../hocks/useApiMutation";
 import specialtyAddFeesService from "../../async/services/post/specialtyAddFeeService";
 import specialtyAddSchedulesService from "../../async/services/post/specialtyAddScheduleService";
+import specialtyDeleteFeeService from "../../async/services/delete/specialtyDeleteFeeService";
+import specialtyDeleteSchedulesService from "../../async/services/delete/specialtyDeleteSchedulesService";
 import FeeForm from "./FeeForm";
 import ScheduleForm from "./ScheduleForm";
 import AlertMessage from "../common/AlertMessage";
@@ -14,6 +16,7 @@ import {
   ChevronDown,
   ChevronUp,
   Plus,
+  Trash2,
 } from "lucide-react";
 
 const daysOfWeek = [
@@ -69,6 +72,40 @@ export default function SpecialtyCard({ specialty, doctors, onUpdate }) {
     },
   });
 
+  const {
+    mutate: deleteFee,
+    isPending: isDeletingFee,
+    message: deleteFeeMessage,
+    type: deleteFeeType,
+    reset: resetDeleteFee,
+    setIdEdit: setDeleteFeeIdEdit,
+  } = useApiMutation(specialtyDeleteFeeService, {
+    onSuccess: () => {
+      setLocalMessage({
+        text: "Tarifa eliminada exitosamente",
+        type: "success",
+      });
+      onUpdate();
+    },
+  });
+
+  const {
+    mutate: deleteSchedules,
+    isPending: isDeletingSchedules,
+    message: deleteSchedulesMessage,
+    type: deleteSchedulesType,
+    reset: resetDeleteSchedules,
+    setIdEdit: setDeleteSchedulesIdEdit,
+  } = useApiMutation(specialtyDeleteSchedulesService, {
+    onSuccess: () => {
+      setLocalMessage({
+        text: "Horarios eliminados exitosamente",
+        type: "success",
+      });
+      onUpdate();
+    },
+  });
+
   const handleAddFees = (feesArray) => {
     setIdEdit(specialty.id);
     addFees(feesArray, token, specialty.id);
@@ -79,14 +116,41 @@ export default function SpecialtyCard({ specialty, doctors, onUpdate }) {
     addSchedules(schedulesArray, token, specialty.id);
   };
 
+  const handleDeleteFee = (feeId) => {
+    const confirmDelete = window.confirm(
+      "¿Seguro que deseas eliminar esta tarifa?",
+    );
+    if (!confirmDelete) return;
+    setDeleteFeeIdEdit(specialty.id);
+    deleteFee(feeId, token, specialty.id);
+  };
+
+  const handleDeleteSchedules = (scheduleIds) => {
+    if (!scheduleIds || scheduleIds.length === 0) return;
+    const confirmDelete = window.confirm(
+      `Se eliminarán ${scheduleIds.length} horarios. ¿Deseas continuar?`,
+    );
+    if (!confirmDelete) return;
+    setDeleteSchedulesIdEdit(specialty.id);
+    deleteSchedules(scheduleIds, token, specialty.id);
+  };
+
   const resetMessages = () => {
     resetFee();
     resetSchedule();
+    resetDeleteFee();
+    resetDeleteSchedules();
     setLocalMessage({ text: "", type: "" });
   };
 
-  const currentMessage = feeMessage || scheduleMessage || localMessage.text;
-  const currentType = feeType || scheduleType || localMessage.type;
+  const currentMessage =
+    feeMessage ||
+    scheduleMessage ||
+    deleteFeeMessage ||
+    deleteSchedulesMessage ||
+    localMessage.text;
+  const currentType =
+    feeType || scheduleType || deleteFeeType || deleteSchedulesType || localMessage.type;
 
   // Calcular estadísticas
   const getFeeStats = () => {
@@ -219,6 +283,15 @@ export default function SpecialtyCard({ specialty, doctors, onUpdate }) {
                           {fee.description}
                         </p>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteFee(fee.id)}
+                        className="text-red-500 hover:text-red-700 disabled:opacity-50"
+                        disabled={isDeletingFee || isDeletingSchedules}
+                        title="Eliminar tarifa"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -352,11 +425,26 @@ export default function SpecialtyCard({ specialty, doctors, onUpdate }) {
                           </div>
                         </div>
 
-                        <div className="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg">
-                          <div className="text-sm font-medium">
-                            {group.slots.length} citas •{" "}
-                            {group.totalHours.toFixed(1)} horas
+                        <div className="flex items-center gap-2">
+                          <div className="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg">
+                            <div className="text-sm font-medium">
+                              {group.slots.length} citas •{" "}
+                              {group.totalHours.toFixed(1)} horas
+                            </div>
                           </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleDeleteSchedules(
+                                group.slots.map((slot) => slot.id),
+                              )
+                            }
+                            className="text-red-500 hover:text-red-700 disabled:opacity-50"
+                            disabled={isDeletingSchedules || isDeletingFee}
+                            title="Eliminar horarios"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
 
