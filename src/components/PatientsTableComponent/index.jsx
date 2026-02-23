@@ -89,8 +89,8 @@ export default function PatientsTable({ patients }) {
         </div>
       </div>
 
-      <div className="card overflow-hidden shadow-sm border border-[var(--color-border)] rounded-2xl bg-[var(--color-background)]">
-        <table className="w-full mb-20 text-left border-collapse">
+      <div className="card overflow-x-auto shadow-sm border border-[var(--color-border)] rounded-2xl bg-[var(--color-background)]">
+        <table className="w-full min-w-[720px] mb-20 text-left border-collapse">
           <thead className="bg-[var(--color-background-secondary)]">
             <tr>
               <th className="p-4 text-sm font-semibold text-[color:var(--text-muted)]">

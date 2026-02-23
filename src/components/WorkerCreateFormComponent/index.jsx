@@ -42,13 +42,17 @@ export default function WorkerCreateForm({ specialties }) {
         confirmPassword: "",
       });
       if (editingWorker.specialties) {
-        const ids = editingWorker.specialties.map((s) =>
-          typeof s === "string" ? s : s.id
-        );
-        setSelectedSpecialties(ids);
+        const ids = editingWorker.specialties
+          .map((s) => {
+            if (typeof s === "string") return s;
+            return s.specialtyId || s.specialty?.id || s.id;
+          })
+          .filter(Boolean);
+        const validIds = new Set((specialties || []).map((s) => s.id));
+        setSelectedSpecialties(ids.filter((id) => validIds.has(id)));
       }
     }
-  }, [editingWorker]);
+  }, [editingWorker, specialties]);
 
   useEffect(() => {
     if (data && data.ok) navigate("/trabajador");
@@ -112,7 +116,14 @@ export default function WorkerCreateForm({ specialties }) {
     };
 
     if (form.role === "DOCTOR") {
-      payload.specialties = selectedSpecialties.slice(); // array of ids
+      const validIds = new Set((specialties || []).map((s) => s.id));
+      payload.specialties = selectedSpecialties
+        .filter((id) => validIds.has(id))
+        .slice();
+      if (payload.specialties.length === 0) {
+        setLocalError("Selecciona al menos una especialidad válida.");
+        return;
+      }
     }
 
     if (!editingWorker) {
