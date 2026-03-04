@@ -93,6 +93,7 @@ const ConsultationEntry = ({
       )
     );
   };
+  console.log(entry.prescriptions);
 
   return (
     <div className={`card ${!isLast ? "mb-4" : ""}`}>
@@ -103,9 +104,9 @@ const ConsultationEntry = ({
         doctor={entry.doctor}
         specialty={specialtyHistory.specialty}
       />
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <PrescriptionInput onAdd={entry.prescriptions} />
-      </div>
+      </div> */}
       {/* Header de la consulta */}
       <ConsultationHeader
         entry={entry}
