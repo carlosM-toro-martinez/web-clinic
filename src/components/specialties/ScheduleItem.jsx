@@ -19,7 +19,7 @@ const ScheduleItem = ({
     ? generateTimeSlots(
         schedule.startTime,
         schedule.endTime,
-        appointmentDuration
+        appointmentDuration,
       )
     : [];
 
@@ -72,7 +72,7 @@ const ScheduleItem = ({
             <option value="2">Martes</option>
             <option value="3">Miércoles</option>
             <option value="4">Jueves</option>
-            <option value="5">Viercoles</option>
+            <option value="5">Viernes</option>
             <option value="6">Sábado</option>
             <option value="0">Domingo</option>
           </select>

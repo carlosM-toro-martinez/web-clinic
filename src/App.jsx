@@ -158,6 +158,14 @@ function App() {
               }
             />
             <Route
+              path="/consultas/rapida"
+              element={
+                <ProtectedRoute roles={["ADMIN", "DOCTOR"]}>
+                  <CrearConsulta />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/especialidades"
               element={
                 <ProtectedRoute roles={["ADMIN"]}>

@@ -151,14 +151,14 @@ function SidebarLayoutComponent() {
           {menuItems.map(({ label, path, icon: Icon }) => {
             const hasNotification = label === "Chats" && newMessageNotification;
 
+            if (label === "Chats" && user.role !== "ADMIN") return null;
+
             return (
-              <>
-                {label === "Chats" && user.role !== "ADMIN" ? null : (
-                  <NavLink
-                    key={path}
-                    to={path}
-                    className={({ isActive }) =>
-                      `
+              <NavLink
+                key={path}
+                to={path}
+                className={({ isActive }) =>
+                  `
                   group
                   flex items-center
                   rounded-xl
@@ -174,23 +174,23 @@ function SidebarLayoutComponent() {
                       : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-variant)] hover:border-[var(--color-border)]"
                   }
                   ${collapsed ? "justify-center" : ""}
-                `
-                    }
-                  >
-                    <div className="relative">
-                      <Icon
-                        size={20}
-                        className={`
+                  `
+                }
+              >
+                <div className="relative">
+                  <Icon
+                    size={20}
+                    className={`
                     transition-transform duration-200
                     ${collapsed ? "" : "group-hover:scale-110"}
                   `}
-                      />
-                      {hasNotification && (
-                        <div className="absolute -top-2 -right-2 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                      )}
-                      {!collapsed && (
-                        <div
-                          className={`
+                  />
+                  {hasNotification && (
+                    <div className="absolute -top-2 -right-2 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                  )}
+                  {!collapsed && (
+                    <div
+                      className={`
                     absolute -top-1 -right-1 w-2 h-2 rounded-full
                     transition-all duration-200
                     ${
@@ -199,24 +199,22 @@ function SidebarLayoutComponent() {
                         : "bg-transparent scale-0"
                     }
                   `}
-                        />
-                      )}
-                    </div>
+                    />
+                  )}
+                </div>
 
-                    {!collapsed && (
-                      <span className="ml-3 transition-all duration-200 font-medium">
-                        {label}
-                      </span>
-                    )}
-
-                    {collapsed && (
-                      <div className="absolute left-full ml-2 px-2 py-1 bg-[var(--color-text-primary)] text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 whitespace-nowrap">
-                        {label}
-                      </div>
-                    )}
-                  </NavLink>
+                {!collapsed && (
+                  <span className="ml-3 transition-all duration-200 font-medium">
+                    {label}
+                  </span>
                 )}
-              </>
+
+                {collapsed && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-[var(--color-text-primary)] text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 whitespace-nowrap">
+                    {label}
+                  </div>
+                )}
+              </NavLink>
             );
           })}
         </nav>

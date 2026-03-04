@@ -140,7 +140,7 @@ const PrintablePrescription = ({
         <div style={{ marginBottom: "10px", fontWeight: "bold" }}>Rp:</div>
 
         <div style={{ marginBottom: "30px", minHeight: "450px" }}>
-          {prescriptions.map((prescription, index) => (
+          {prescriptions?.map((prescription, index) => (
             <div key={index} style={{ marginBottom: "15px", fontSize: "11px" }}>
               {/* Nombre del medicamento y dosis */}
               <div style={{ fontWeight: "bold", marginBottom: "3px" }}>

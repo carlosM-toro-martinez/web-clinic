@@ -10,7 +10,7 @@ import AlertMessage from "../common/AlertMessage";
 import { useContext, useEffect } from "react";
 import { MainContext } from "../../context/MainContext";
 
-const FormHistory = ({ patients = [] }) => {
+const FormHistory = ({ patients = [], initialContext = null }) => {
   const location = useLocation();
 
   const {
@@ -65,15 +65,15 @@ const FormHistory = ({ patients = [] }) => {
     isErrorDiagnosis,
     diagnosisError,
     diagnosisResponse,
-  } = useMedicalHistory(patients, location.state || {});
+  } = useMedicalHistory(patients, initialContext ?? location.state ?? {});
 
   const { patientHistory, setPatientHistory } = useContext(MainContext);
 
   useEffect(() => {
-    if (!patientHistory) {
+    if (patient && patientHistory?.id !== patient.id) {
       setPatientHistory({ ...patient });
     }
-  }, []);
+  }, [patient, patientHistory?.id, setPatientHistory]);
 
   const renderStep = () => {
     switch (step) {
