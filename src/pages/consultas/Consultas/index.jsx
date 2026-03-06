@@ -75,7 +75,7 @@ function Consultas() {
               onClick={() => navigate("/consultas/rapida-gratis")}
               className="btn-secondary px-5 py-3 text-sm font-semibold rounded-xl cursor-pointer"
             >
-              Consulta sin cita
+              Consulta rápida sin cita
             </button>
           </div>
         </div>
