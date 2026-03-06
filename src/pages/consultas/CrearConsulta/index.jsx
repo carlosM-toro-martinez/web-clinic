@@ -19,14 +19,16 @@ function CrearConsulta() {
   const location = useLocation();
   const { user, cashRegister } = useContext(MainContext);
   const isQuickMode = location.pathname === "/consultas/rapida";
+  const isFreeMode = location.pathname === "/consultas/rapida-gratis";
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatientId, setSelectedPatientId] = useState("");
   const [selectedDoctorId, setSelectedDoctorId] = useState("");
   const [selectedSpecialtyId, setSelectedSpecialtyId] = useState("");
   const [quickContext, setQuickContext] = useState(null);
-  const [quickDate, setQuickDate] = useState(null);
+  const [quickDate, setQuickDate] = useState(() => new Date());
   const [quickSchedule, setQuickSchedule] = useState(null);
   const [localError, setLocalError] = useState("");
+  const [reservationAmount, setReservationAmount] = useState("");
 
   const {
     mutate: createAppointment,
@@ -149,11 +151,38 @@ function CrearConsulta() {
     if (!selectedSpecialty || !quickDate) return [];
     const day = quickDate.getDay();
     return (selectedSpecialty.schedules || []).filter((s) => {
-      if (!s.isActive || s.dayOfWeek !== day) return false;
-      if (selectedDoctorId && s.doctorId !== selectedDoctorId) return false;
+      if (!s.isActive) return false;
+      if (Number(s.dayOfWeek) !== day) return false;
+      if (
+        selectedDoctorId &&
+        String(s.doctorId) !== String(selectedDoctorId)
+      ) {
+        return false;
+      }
       return true;
     });
   }, [selectedSpecialty, quickDate, selectedDoctorId]);
+
+  const isQuickScheduleOccupied = useMemo(() => {
+    return (schedule) => {
+      if (!appointments || !quickDate) return false;
+      const selectedDateString = quickDate.toISOString().split("T")[0];
+      return appointments.some((appointment) => {
+        if (appointment.scheduleId !== schedule.id) return false;
+        const appointmentDate = new Date(appointment.scheduledStart);
+        const appointmentDateString = appointmentDate
+          .toISOString()
+          .split("T")[0];
+        return appointmentDateString === selectedDateString;
+      });
+    };
+  }, [appointments, quickDate]);
+
+  const quickAvailableSchedules = useMemo(() => {
+    return quickFilteredSchedules
+      .filter((s) => !isQuickScheduleOccupied(s))
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  }, [quickFilteredSchedules, isQuickScheduleOccupied]);
 
   const canStartQuick =
     !!selectedPatient && !!selectedDoctor && !!selectedSpecialty;
@@ -182,7 +211,7 @@ function CrearConsulta() {
 
   useEffect(() => {
     if (!selectedSpecialtyId) {
-      setQuickDate(null);
+      setQuickDate(new Date());
       setQuickSchedule(null);
     }
   }, [selectedSpecialtyId]);
@@ -192,6 +221,30 @@ function CrearConsulta() {
       setQuickSchedule(null);
     }
   }, [selectedDoctorId]);
+
+  useEffect(() => {
+    if (!quickDate) return;
+    if (quickAvailableSchedules.length === 0) {
+      setQuickSchedule(null);
+      return;
+    }
+    const isSameDay = (a, b) =>
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+    const now = new Date();
+    const nextSchedule =
+      isSameDay(quickDate, now) &&
+      quickAvailableSchedules.find((s) => {
+        const [h, m] = s.startTime.split(":").map(Number);
+        return h > now.getHours() || (h === now.getHours() && m > now.getMinutes());
+      });
+    const fallback = quickAvailableSchedules[0];
+    const candidate = nextSchedule || fallback;
+    if (!quickSchedule || !quickAvailableSchedules.some((s) => s.id === quickSchedule.id)) {
+      setQuickSchedule(candidate);
+    }
+  }, [quickDate, quickAvailableSchedules, quickSchedule]);
 
   const handleCreateAppointment = () => {
     setLocalError("");
@@ -222,7 +275,15 @@ function CrearConsulta() {
     endDateTime.setHours(endHour, endMinute, 0, 0);
 
     const total = Number(selectedFee.amount || 0);
-    const reserva = 0;
+    const reserva = Number(reservationAmount || 0);
+    if (Number.isNaN(reserva) || reserva < 0) {
+      setLocalError("El monto de pago debe ser un número válido.");
+      return;
+    }
+    if (reserva > total) {
+      setLocalError("El monto de pago no puede ser mayor al total.");
+      return;
+    }
 
     createAppointment({
       patientId: selectedPatient.id,
@@ -246,6 +307,23 @@ function CrearConsulta() {
     });
   };
 
+  const handleStartFreeConsultation = () => {
+    setLocalError("");
+    if (!canStartQuick) {
+      setLocalError("Selecciona paciente, especialidad y médico.");
+      return;
+    }
+    setQuickContext({
+      patientId: selectedPatient.id,
+      doctorId: selectedDoctor.id,
+      specialtyId: selectedSpecialty.id,
+      patient: selectedPatient,
+      doctor: selectedDoctor,
+      specialty: selectedSpecialty,
+      appointmentsId: null,
+    });
+  };
+
   const contextToUse = location.state ?? quickContext;
 
   return (
@@ -263,15 +341,17 @@ function CrearConsulta() {
             errorSpecialties?.message ||
             "Error al cargar datos necesarios"}
         </div>
-      ) : isQuickMode && !contextToUse ? (
+      ) : (isQuickMode || isFreeMode) && !contextToUse ? (
         <section className="max-w-4xl mx-auto mt-6 p-6 bg-[var(--color-background)] border border-[var(--color-border)] rounded-2xl shadow-sm space-y-6">
           <div>
             <h2 className="text-2xl font-semibold text-[var(--color-text-primary)]">
-              Consulta rápida
+              {isFreeMode ? "Consulta gratis" : "Consulta rápida"}
             </h2>
             <p className="text-[var(--color-text-subtle)] mt-1">
               Selecciona paciente, especialidad y médico para iniciar la
-              consulta con una cita rápida.
+              {isFreeMode
+                ? "consulta sin cita ni pago."
+                : "consulta con una cita rápida."}
             </p>
           </div>
 
@@ -384,8 +464,32 @@ function CrearConsulta() {
             </div>
           </div>
 
-          {selectedSpecialty && (
+          {isQuickMode && selectedSpecialty && (
             <div className="border-t border-[var(--color-border)] pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4">
+                  <div className="text-xs text-[var(--color-text-subtle)]">
+                    Tarifa
+                  </div>
+                  <div className="text-lg font-semibold text-[var(--color-text-primary)]">
+                    {selectedFee ? `${selectedFee.amount} BOB` : "Sin tarifa"}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                    Pago (reserva)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={reservationAmount}
+                    onChange={(e) => setReservationAmount(e.target.value)}
+                    placeholder="Monto a cobrar ahora"
+                    className="w-full px-4 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition"
+                  />
+                </div>
+              </div>
               <DateAndScheduleSelector
                 selectedSpecialty={selectedSpecialty}
                 selectedDate={quickDate}
@@ -417,15 +521,24 @@ function CrearConsulta() {
           <div className="flex justify-end">
             <button
               type="button"
-              onClick={handleCreateAppointment}
+              onClick={
+                isFreeMode ? handleStartFreeConsultation : handleCreateAppointment
+              }
               disabled={
-                !canStartQuick || !quickDate || !quickSchedule || !selectedFee
+                isFreeMode
+                  ? !canStartQuick
+                  : !canStartQuick ||
+                    !quickDate ||
+                    !quickSchedule ||
+                    !selectedFee
               }
               className="btn-primary px-6 py-3 text-lg font-semibold rounded-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isCreatingAppointment
-                ? "Agendando..."
-                : "Agendar y empezar consulta"}
+              {isFreeMode
+                ? "Iniciar consulta gratis"
+                : isCreatingAppointment
+                  ? "Agendando..."
+                  : "Agendar y empezar consulta"}
             </button>
           </div>
         </section>

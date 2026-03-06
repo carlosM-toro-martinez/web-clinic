@@ -19,7 +19,7 @@ const DateAndScheduleSelector = ({
 
     const daysWithSchedules = selectedSpecialty.schedules
       .filter((schedule) => schedule.isActive)
-      .map((schedule) => schedule.dayOfWeek);
+      .map((schedule) => Number(schedule.dayOfWeek));
 
     return [...new Set(daysWithSchedules)];
   }, [selectedSpecialty]);

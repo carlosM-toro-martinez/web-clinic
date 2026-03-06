@@ -62,13 +62,22 @@ function Consultas() {
           <h2 className="text-2xl font-bold text-center md:text-left">
             Consultas pendientes
           </h2>
-          {/* <button
-            type="button"
-            onClick={() => navigate("/consultas/rapida")}
-            className="btn-primary px-5 py-3 text-sm font-semibold rounded-xl cursor-pointer"
-          >
-            Consulta rápida
-          </button> */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              type="button"
+              onClick={() => navigate("/consultas/rapida")}
+              className="btn-primary px-5 py-3 text-sm font-semibold rounded-xl cursor-pointer"
+            >
+              Consulta rápida
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/consultas/rapida-gratis")}
+              className="btn-secondary px-5 py-3 text-sm font-semibold rounded-xl cursor-pointer"
+            >
+              Consulta sin cita
+            </button>
+          </div>
         </div>
         <AppointmentsList appointments={appointmentsResponse.data} />
       </div>
