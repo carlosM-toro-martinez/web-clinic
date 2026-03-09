@@ -7,11 +7,13 @@ import Step3PhysicalExam from "../medical-history/Step3PhysicalExam";
 import Step4Diagnosis from "../medical-history/Step4Diagnosis";
 import Step5Treatment from "../medical-history/Step5Treatment";
 import AlertMessage from "../common/AlertMessage";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MainContext } from "../../context/MainContext";
+import CompleteHistoryForm from "./CompleteHistoryForm";
 
 const FormHistory = ({ patients = [], initialContext = null }) => {
   const location = useLocation();
+  const [viewMode, setViewMode] = useState("steps"); // "steps" o "complete"
 
   const {
     // State
@@ -65,7 +67,11 @@ const FormHistory = ({ patients = [], initialContext = null }) => {
     isErrorDiagnosis,
     diagnosisError,
     diagnosisResponse,
-  } = useMedicalHistory(patients, initialContext ?? location.state ?? {});
+  } = useMedicalHistory(
+    patients,
+    initialContext ?? location.state ?? {},
+    viewMode,
+  );
 
   const { patientHistory, setPatientHistory } = useContext(MainContext);
 
@@ -173,16 +179,78 @@ const FormHistory = ({ patients = [], initialContext = null }) => {
             paciente
           </p>
         </div>
-        <div className="flex items-center gap-3 bg-[var(--color-surface)] px-4 py-2 rounded-xl border border-[var(--color-border)]">
-          <div className="text-sm font-medium text-[var(--color-text-secondary)]">
-            Paso {step} de 5
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          {/* Selector de Modo de Vista */}
+          <div className="flex items-center gap-2 bg-[var(--color-surface)] px-3 py-2 rounded-xl border border-[var(--color-border)]">
+            <label className="text-sm font-medium text-[var(--color-text-secondary)]">
+              Ver como:
+            </label>
+            <select
+              value={viewMode}
+              onChange={(e) => setViewMode(e.target.value)}
+              className="px-3 py-1 rounded-lg bg-white border border-[var(--color-border)] text-sm font-medium text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+            >
+              <option value="steps">📋 Por Pasos (Recomendado)</option>
+              <option value="complete">📄 Todo en Uno</option>
+            </select>
           </div>
+
+          {/* Indicador de Paso (solo en modo pasos) */}
+          {viewMode === "steps" && (
+            <div className="flex items-center gap-3 bg-[var(--color-surface)] px-4 py-2 rounded-xl border border-[var(--color-border)]">
+              <div className="text-sm font-medium text-[var(--color-text-secondary)]">
+                Paso {step} de 5
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      <StepIndicator step={step} />
+      {viewMode === "steps" && <StepIndicator step={step} />}
 
-      <div className="space-y-6 mb-8">{renderStep()}</div>
+      <div className="space-y-6 mb-8">
+        {viewMode === "steps" ? (
+          renderStep()
+        ) : (
+          <CompleteHistoryForm
+            patient={patient}
+            patientHistory={patientHistory}
+            specialtyId={specialtyId}
+            doctorId={doctorId}
+            initialNote={initialNote}
+            onInitialNoteChange={setInitialNote}
+            patientAge={patientAge}
+            visitDate={visitDate}
+            onVisitDateChange={setVisitDate}
+            specialty={specialty}
+            doctor={doctor}
+            objectiveNote={objectiveNote}
+            onObjectiveNoteChange={setObjectiveNote}
+            extendedFields={extendedFields}
+            onExtendedFieldChange={updateExtendedField}
+            chiefComplaint={chiefComplaint}
+            onChiefComplaintChange={setChiefComplaint}
+            vitals={vitals}
+            onVitalChange={handleVitalChange}
+            subjectiveNote={subjectiveNote}
+            onSubjectiveNoteChange={setSubjectiveNote}
+            assessment={assessment}
+            onAssessmentChange={setAssessment}
+            plan={plan}
+            onPlanChange={setPlan}
+            diagnoses={diagnoses}
+            onAddDiagnosis={addDiagnosis}
+            onRemoveDiagnosis={removeDiagnosis}
+            onTogglePrimaryDiagnosis={togglePrimaryDiagnosis}
+            diagnosisResponse={diagnosisResponse}
+            isLoadingDiagnosis={isLoadingDiagnosis}
+            isErrorDiagnosis={isErrorDiagnosis}
+            prescriptions={prescriptions}
+            onAddPrescription={addPrescription}
+            onRemovePrescription={removePrescription}
+          />
+        )}
+      </div>
 
       <div className="mb-6">
         {localError && (
@@ -199,15 +267,16 @@ const FormHistory = ({ patients = [], initialContext = null }) => {
         onBack={goBack}
         onNext={goNext}
         isPending={isPending}
+        viewMode={viewMode}
       />
     </form>
   );
 };
 
-const FormActions = ({ step, onBack, onNext, isPending }) => (
+const FormActions = ({ step, onBack, onNext, isPending, viewMode }) => (
   <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6 border-t border-[var(--color-border)]">
     <div>
-      {step > 1 && (
+      {viewMode === "steps" && step > 1 && (
         <button
           type="button"
           onClick={onBack}
@@ -219,18 +288,28 @@ const FormActions = ({ step, onBack, onNext, isPending }) => (
     </div>
 
     <div className="flex gap-3">
-      {step < 5 ? (
-        <button
-          type="button"
-          onClick={onNext}
-          className="px-8 py-3 cursor-pointer rounded-xl text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-600)] transition font-medium shadow-sm"
-        >
-          Continuar →
-        </button>
+      {viewMode === "steps" ? (
+        step < 5 ? (
+          <button
+            type="button"
+            onClick={onNext}
+            className="px-8 py-3 cursor-pointer rounded-xl text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-600)] transition font-medium shadow-sm"
+          >
+            Continuar →
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={isPending}
+            className="px-8 py-3 cursor-pointer rounded-xl text-white bg-[var(--color-success)] hover:bg-[#0da271] disabled:bg-[var(--color-text-subtle)] disabled:cursor-not-allowed transition font-medium shadow-sm"
+          >
+            {isPending ? "🔄 Guardando..." : "✅ Guardar Historia Clínica"}
+          </button>
+        )
       ) : (
         <button
-          type="button"
-          onClick={onNext}
+          type="submit"
           disabled={isPending}
           className="px-8 py-3 cursor-pointer rounded-xl text-white bg-[var(--color-success)] hover:bg-[#0da271] disabled:bg-[var(--color-text-subtle)] disabled:cursor-not-allowed transition font-medium shadow-sm"
         >

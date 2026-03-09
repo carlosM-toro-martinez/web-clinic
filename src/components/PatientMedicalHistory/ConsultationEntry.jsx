@@ -93,7 +93,7 @@ const ConsultationEntry = ({
       )
     );
   };
-  console.log(entry.prescriptions);
+  console.log(entry);
 
   return (
     <div className={`card ${!isLast ? "mb-4" : ""}`}>

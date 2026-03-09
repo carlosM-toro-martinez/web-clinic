@@ -5,7 +5,11 @@ import historyAddService from "../async/services/post/historyAddService";
 import diagnosisService from "../async/services/get/diagnosisService";
 import { useQuery } from "@tanstack/react-query";
 
-export const useMedicalHistory = (patients = [], locationState) => {
+export const useMedicalHistory = (
+  patients = [],
+  locationState,
+  viewMode = "steps",
+) => {
   const navigate = useNavigate();
   const {
     specialtyId,
@@ -36,7 +40,7 @@ export const useMedicalHistory = (patients = [], locationState) => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [initialNote, setInitialNote] = useState("");
   const [visitDate, setVisitDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [chiefComplaint, setChiefComplaint] = useState("");
   const [subjectiveNote, setSubjectiveNote] = useState("");
@@ -171,7 +175,7 @@ export const useMedicalHistory = (patients = [], locationState) => {
   const addDiagnosis = (diagnosisId, isPrimary = false) => {
     if (!diagnosisId) return;
     const newList = diagnoses.map((d) =>
-      isPrimary ? { ...d, isPrimary: false } : d
+      isPrimary ? { ...d, isPrimary: false } : d,
     );
     newList.push({ diagnosisId, isPrimary });
     setDiagnoses(newList);
@@ -186,7 +190,7 @@ export const useMedicalHistory = (patients = [], locationState) => {
       prev.map((d, i) => ({
         ...d,
         isPrimary: i === idx ? !d.isPrimary : false,
-      }))
+      })),
     );
   };
 
@@ -219,16 +223,21 @@ export const useMedicalHistory = (patients = [], locationState) => {
   };
 
   const handleSubmit = (e) => {
-    console.log("🔴 handleSubmit EJECUTADO - step actual:", step);
+    console.log(
+      "🔴 handleSubmit EJECUTADO - step actual:",
+      step,
+      "viewMode:",
+      viewMode,
+    );
     e.preventDefault();
     setLocalError("");
 
-    // Evitar envíos accidentales si no estamos en el paso final
-    if (step !== 5) {
+    // Evitar envíos accidentales si no estamos en el paso final (excepto en modo "complete")
+    if (viewMode === "steps" && step !== 5) {
       console.log("✅ Submit bloqueado: no estamos en el paso 5", { step });
       return;
     }
-    console.log("⚠️ ENVIANDO FORMULARIO - Estamos en paso 5");
+    console.log("⚠️ ENVIANDO FORMULARIO - Paso 5 o modo completo");
 
     if (!specialtyId) {
       setLocalError("Falta el id de especialidad (specialtyId).");
