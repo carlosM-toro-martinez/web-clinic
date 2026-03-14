@@ -13,7 +13,7 @@ import CompleteHistoryForm from "./CompleteHistoryForm";
 
 const FormHistory = ({ patients = [], initialContext = null }) => {
   const location = useLocation();
-  const [viewMode, setViewMode] = useState("steps"); // "steps" o "complete"
+  const [viewMode, setViewMode] = useState("complete"); // "steps" o "complete"
 
   const {
     // State
