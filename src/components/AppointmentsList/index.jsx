@@ -10,7 +10,12 @@ import {
 } from "lucide-react";
 import { MainContext } from "../../context/MainContext";
 
-export default function AppointmentsList({ appointments = [] }) {
+export default function AppointmentsList({
+  appointments = [],
+  onCancelAppointment,
+  isCancelling = false,
+  cancellingAppointmentId = null,
+}) {
   const navigate = useNavigate();
   const { patientHistory, setPatientHistory } = useContext(MainContext);
 
@@ -31,19 +36,23 @@ export default function AppointmentsList({ appointments = [] }) {
     );
   };
 
+  const pendingAppointments = appointments.filter(
+    (appointment) => appointment.status !== "CANCELLED",
+  );
+
   // Separar citas de hoy y otras fechas
-  const todayAppointments = appointments
+  const todayAppointments = pendingAppointments
     .filter((appointment) => isToday(appointment.scheduledStart))
     .sort((a, b) => new Date(a.scheduledStart) - new Date(b.scheduledStart)); // Ordenar por hora
 
-  const otherAppointments = appointments
+  const otherAppointments = pendingAppointments
     .filter((appointment) => !isToday(appointment.scheduledStart))
     .sort((a, b) => new Date(a.scheduledStart) - new Date(b.scheduledStart)); // Ordenar por fecha
 
-  if (appointments.length === 0) {
+  if (pendingAppointments.length === 0) {
     return (
       <div className="flex justify-center items-center h-64 text-gray-500">
-        No hay citas programadas.
+        No hay consultas pendientes.
       </div>
     );
   }
@@ -67,6 +76,9 @@ export default function AppointmentsList({ appointments = [] }) {
                 appointment={appointment}
                 navigate={navigate}
                 isToday={true}
+                onCancelAppointment={onCancelAppointment}
+                isCancelling={isCancelling}
+                cancellingAppointmentId={cancellingAppointmentId}
               />
             ))}
           </div>
@@ -90,6 +102,9 @@ export default function AppointmentsList({ appointments = [] }) {
                 appointment={appointment}
                 navigate={navigate}
                 isToday={false}
+                onCancelAppointment={onCancelAppointment}
+                isCancelling={isCancelling}
+                cancellingAppointmentId={cancellingAppointmentId}
               />
             ))}
           </div>
@@ -100,7 +115,14 @@ export default function AppointmentsList({ appointments = [] }) {
 }
 
 // Componente separado para la tarjeta de cita
-const AppointmentCard = ({ appointment, navigate, isToday }) => {
+const AppointmentCard = ({
+  appointment,
+  navigate,
+  isToday,
+  onCancelAppointment,
+  isCancelling,
+  cancellingAppointmentId,
+}) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const today = new Date();
@@ -163,6 +185,11 @@ const AppointmentCard = ({ appointment, navigate, isToday }) => {
   };
 
   const handleOpenConsulta = (viewOnly = false) => {
+    if (appointment.status === "CANCELLED") {
+      window.alert("No se puede iniciar una consulta de una cita cancelada.");
+      return;
+    }
+
     // 1. Abrir nueva pestaña con /consultas/crear
     const state = {
       specialtyId: appointment.specialtyId,
@@ -186,7 +213,37 @@ const AppointmentCard = ({ appointment, navigate, isToday }) => {
     }
   };
 
+  const handleCancelAppointment = () => {
+    if (!onCancelAppointment) return;
+
+    if (appointment.status === "CANCELLED") {
+      window.alert("Esta cita ya fue cancelada.");
+      return;
+    }
+
+    if (appointment.status === "COMPLETED") {
+      window.alert("No se puede cancelar una cita completada.");
+      return;
+    }
+
+    const reasonInput = window.prompt(
+      "Motivo de cancelación (opcional):",
+      "",
+    );
+
+    if (reasonInput === null) return;
+
+    const reason = reasonInput.trim();
+
+    onCancelAppointment({
+      appointmentId: appointment.id,
+      reason: reason || undefined,
+    });
+  };
+
   const statusStyles = getStatusStyles(appointment.status);
+  const isCancellingCurrent =
+    isCancelling && cancellingAppointmentId === appointment.id;
 
   return (
     <div
@@ -269,7 +326,7 @@ const AppointmentCard = ({ appointment, navigate, isToday }) => {
         </div>
       )}
 
-      <div className="flex justify-center">
+      <div className="flex justify-center gap-3">
         {appointment.status === "COMPLETED" ? (
           <div className="text-center">
             <div className="text-green-600 text-sm font-medium mb-1">
@@ -294,6 +351,18 @@ const AppointmentCard = ({ appointment, navigate, isToday }) => {
             {isToday ? "🎯 Iniciar Consulta" : "Iniciar Consulta"}
           </button>
         )}
+
+        {appointment.status !== "COMPLETED" &&
+          appointment.status !== "CANCELLED" && (
+            <button
+              type="button"
+              onClick={handleCancelAppointment}
+              disabled={isCancellingCurrent}
+              className="px-4 py-3 text-sm font-semibold rounded-xl border border-red-300 text-red-600 hover:bg-red-50 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isCancellingCurrent ? "Cancelando..." : "Cancelar cita"}
+            </button>
+          )}
       </div>
     </div>
   );

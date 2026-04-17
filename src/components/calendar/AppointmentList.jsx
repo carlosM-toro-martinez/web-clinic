@@ -1,14 +1,19 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import ModalPayment from "./ModalPayment";
 import PaymentForm from "./PaymentForm";
 import appointmentUpdateService from "../../async/services/put/appointmentUpdateService";
 import useApiMutation from "../../hocks/useApiMutation";
+import { useMutation } from "@tanstack/react-query";
+import appointmentCancelService from "../../async/services/patch/appointmentCancelService";
+import { MainContext } from "../../context/MainContext";
 import medic from "../../assets/images/medic.png";
 const AppointmentList = ({
   filteredAppointments,
   formattedDate,
   refetchAppointments,
+  canCancelAppointment = false,
 }) => {
+  const { token } = useContext(MainContext);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [appointments, setAppointments] = useState(filteredAppointments);
@@ -36,6 +41,60 @@ const AppointmentList = ({
     mutate(payload);
   };
 
+  const cancelAppointmentMutation = useMutation({
+    mutationFn: ({ appointmentId, reason }) =>
+      appointmentCancelService(appointmentId, reason, token),
+    onSuccess: async () => {
+      await refetchAppointments();
+      window.alert("La cita fue cancelada correctamente.");
+    },
+    onError: (error) => {
+      if (error === 404) {
+        window.alert("No se encontró la cita. Puede haber sido eliminada.");
+        return;
+      }
+
+      if (error === 400) {
+        window.alert(
+          "No se puede cancelar esta cita porque ya está cancelada o completada.",
+        );
+        return;
+      }
+
+      window.alert("No se pudo cancelar la cita. Intenta nuevamente.");
+    },
+  });
+
+  const handleCancelAppointment = (event, appointment) => {
+    event.stopPropagation();
+
+    if (!canCancelAppointment) {
+      window.alert("No tienes permisos para cancelar citas.");
+      return;
+    }
+
+    if (appointment.status === "CANCELLED") {
+      window.alert("Esta cita ya fue cancelada.");
+      return;
+    }
+
+    if (appointment.status === "COMPLETED") {
+      window.alert("No se puede cancelar una cita completada.");
+      return;
+    }
+
+    const reasonInput = window.prompt("Motivo de cancelación (opcional):", "");
+
+    if (reasonInput === null) return;
+
+    const reason = reasonInput.trim();
+
+    cancelAppointmentMutation.mutate({
+      appointmentId: appointment.id,
+      reason: reason || undefined,
+    });
+  };
+
   return (
     <div className="bg-[var(--color-surface-variant)] rounded-[var(--radius-xl)] p-4 border border-[var(--color-border)]">
       <h3 className="text-[color:var(--color-text-primary)] font-semibold mb-3">
@@ -52,6 +111,12 @@ const AppointmentList = ({
               key={appointment.id}
               appointment={appointment}
               onClick={() => handleCardClick(appointment)}
+              onCancel={handleCancelAppointment}
+              canCancelAppointment={canCancelAppointment}
+              isCancelling={cancelAppointmentMutation.isPending}
+              cancellingAppointmentId={
+                cancelAppointmentMutation.variables?.appointmentId
+              }
             />
           ))
         )}
@@ -70,7 +135,14 @@ const AppointmentList = ({
   );
 };
 
-const AppointmentCard = ({ appointment, onClick }) => {
+const AppointmentCard = ({
+  appointment,
+  onClick,
+  onCancel,
+  canCancelAppointment,
+  isCancelling,
+  cancellingAppointmentId,
+}) => {
   const start = new Date(appointment.scheduledStart);
   const end = new Date(appointment.scheduledEnd);
 
@@ -119,6 +191,12 @@ const AppointmentCard = ({ appointment, onClick }) => {
   };
 
   const statusStyles = getStatusStyles(appointment.status);
+  const canShowCancelButton =
+    canCancelAppointment &&
+    appointment.status !== "CANCELLED" &&
+    appointment.status !== "COMPLETED";
+  const isCancellingCurrent =
+    isCancelling && cancellingAppointmentId === appointment.id;
 
   return (
     <div
@@ -209,6 +287,19 @@ const AppointmentCard = ({ appointment, onClick }) => {
           </div>
         )}
       </div>
+
+      {canShowCancelButton && (
+        <div className="mt-3 flex justify-end">
+          <button
+            type="button"
+            onClick={(event) => onCancel(event, appointment)}
+            disabled={isCancellingCurrent}
+            className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isCancellingCurrent ? "Cancelando..." : "Cancelar cita"}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

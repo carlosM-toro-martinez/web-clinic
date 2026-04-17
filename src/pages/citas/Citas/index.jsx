@@ -1,12 +1,17 @@
-import React from "react";
+import React, { useContext } from "react";
 import LayoutComponent from "../../../components/LayoutComponent";
 import { useQuery } from "@tanstack/react-query";
 import appointmentsService from "../../../async/services/get/appointmentsService";
 import doctorsService from "../../../async/services/get/doctorsService";
 import specialtiesService from "../../../async/services/get/specialtiesService";
 import CalendarAppointments from "../../../components/calendar";
+import { MainContext } from "../../../context/MainContext";
 
 function Citas() {
+  const { user } = useContext(MainContext);
+  const canCancelAppointment =
+    user?.role === "RECEPTIONIST" || user?.role === "ADMIN";
+
   const {
     data: appointmentsResponse,
     isLoading: isLoadingAppointments,
@@ -79,6 +84,7 @@ function Citas() {
         doctors={doctors}
         specialties={specialties}
         refetchAppointments={refetchAppointments}
+        canCancelAppointment={canCancelAppointment}
       />
     </LayoutComponent>
   );

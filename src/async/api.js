@@ -22,7 +22,13 @@ const buildOptions = (payload, method, isFile, tenantId, token = null) => {
       : getHeaders(tenantId, token),
   };
 
-  if (method === "POST" || method === "PUT" || method === "DELETE") {
+  if (
+    (method === "POST" ||
+      method === "PUT" ||
+      method === "PATCH" ||
+      method === "DELETE") &&
+    payload !== undefined
+  ) {
     options["body"] = isFile ? payload : JSON.stringify(payload);
   }
 
@@ -75,6 +81,14 @@ export const put = async (
   isFile = false,
   token = null,
 ) => request(endpoint, payload, "PUT", isFile, tenantId, token);
+
+export const patch = async (
+  endpoint,
+  payload,
+  tenantId = "clinic-default",
+  isFile = false,
+  token = null,
+) => request(endpoint, payload, "PATCH", isFile, tenantId, token);
 
 export const remove = async (
   endpoint,

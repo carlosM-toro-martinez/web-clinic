@@ -1,13 +1,14 @@
 import React, { useContext } from "react";
 import LayoutComponent from "../../../components/LayoutComponent";
 import doctorsAppointmentsService from "../../../async/services/get/doctorsAppointmentsService";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { MainContext } from "../../../context/MainContext";
 import AppointmentsList from "../../../components/AppointmentsList";
 import { useNavigate } from "react-router-dom";
+import appointmentCancelService from "../../../async/services/patch/appointmentCancelService";
 
 function Consultas() {
-  const { user } = useContext(MainContext);
+  const { user, token } = useContext(MainContext);
   const navigate = useNavigate();
 
   const {
@@ -15,6 +16,7 @@ function Consultas() {
     isLoading: isLoadingAppointments,
     isError: isErrorAppointments,
     error: errorAppointments,
+    refetch: refetchAppointments,
   } = useQuery({
     queryKey: ["doctorsAppointments"],
     queryFn: () =>
@@ -25,6 +27,30 @@ function Consultas() {
       ),
 
     //queryFn: () => doctorsAppointmentsService(user.id),
+  });
+
+  const cancelAppointmentMutation = useMutation({
+    mutationFn: ({ appointmentId, reason }) =>
+      appointmentCancelService(appointmentId, reason, token),
+    onSuccess: async () => {
+      await refetchAppointments();
+      window.alert("La cita fue cancelada correctamente.");
+    },
+    onError: (error) => {
+      if (error === 404) {
+        window.alert("No se encontró la cita. Puede haber sido eliminada.");
+        return;
+      }
+
+      if (error === 400) {
+        window.alert(
+          "No se puede cancelar esta cita porque ya está cancelada o completada.",
+        );
+        return;
+      }
+
+      window.alert("No se pudo cancelar la cita. Intenta nuevamente.");
+    },
   });
 
   const isLoading = isLoadingAppointments;
@@ -42,8 +68,7 @@ function Consultas() {
 
   if (isError) {
     const errorMessage =
-      errorDoctors?.message ||
-      errorSpecialties?.message ||
+      errorAppointments?.message ||
       "Error al cargar los datos necesarios";
 
     return (
@@ -79,7 +104,12 @@ function Consultas() {
             </button>
           </div>
         </div>
-        <AppointmentsList appointments={appointmentsResponse.data} />
+        <AppointmentsList
+          appointments={appointmentsResponse.data}
+          onCancelAppointment={cancelAppointmentMutation.mutate}
+          isCancelling={cancelAppointmentMutation.isPending}
+          cancellingAppointmentId={cancelAppointmentMutation.variables?.appointmentId}
+        />
       </div>
     </LayoutComponent>
   );

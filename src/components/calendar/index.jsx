@@ -11,6 +11,7 @@ function CalendarAppointments({
   specialties = [],
   appointments = [],
   refetchAppointments,
+  canCancelAppointment = false,
 }) {
   const navigate = useNavigate();
 
@@ -53,6 +54,7 @@ function CalendarAppointments({
             filteredAppointments={filteredAppointments}
             formattedDate={formattedDate}
             refetchAppointments={refetchAppointments}
+            canCancelAppointment={canCancelAppointment}
           />
         </div>
 

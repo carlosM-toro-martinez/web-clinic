@@ -7,13 +7,19 @@ import Step3PhysicalExam from "../medical-history/Step3PhysicalExam";
 import Step4Diagnosis from "../medical-history/Step4Diagnosis";
 import Step5Treatment from "../medical-history/Step5Treatment";
 import AlertMessage from "../common/AlertMessage";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { MainContext } from "../../context/MainContext";
 import CompleteHistoryForm from "./CompleteHistoryForm";
+import { useReactToPrint } from "react-to-print";
+import html2pdf from "html2pdf.js";
+import PrintableClinicalHistory from "../medical-history/PrintableClinicalHistory";
+import ClinicalHistoryPDFModal from "../medical-history/ClinicalHistoryPDFModal";
 
 const FormHistory = ({ patients = [], initialContext = null }) => {
   const location = useLocation();
   const [viewMode, setViewMode] = useState("complete"); // "steps" o "complete"
+  const [showHistoryPreview, setShowHistoryPreview] = useState(false);
+  const historyPrintRef = useRef(null);
 
   const {
     // State
@@ -74,6 +80,126 @@ const FormHistory = ({ patients = [], initialContext = null }) => {
   );
 
   const { patientHistory, setPatientHistory } = useContext(MainContext);
+  const currentPatient = patientHistory || patient;
+
+  const draftSpecialtyHistories = useMemo(() => {
+    const diagnosisCatalog = diagnosisResponse?.data || [];
+    const normalizedDiagnoses = diagnoses.map((diagnosis, index) => {
+      const diagnosisInfo = diagnosisCatalog.find(
+        (item) => item.id === diagnosis.diagnosisId,
+      );
+
+      return {
+        id: `draft-dx-${index}`,
+        isPrimary: !!diagnosis.isPrimary,
+        diagnosis: diagnosisInfo || {
+          name: diagnosis.diagnosisId,
+          code: "NUEVO",
+          description: "Diagnóstico personalizado",
+        },
+      };
+    });
+
+    const draftEntry = {
+      id: "borrador",
+      note: initialNote,
+      visitDate,
+      doctor,
+      chiefComplaint,
+      subjectiveNote,
+      objectiveNote,
+      assessment,
+      plan,
+      vitals,
+      diagnoses: normalizedDiagnoses,
+      prescriptions: [
+        {
+          id: "draft-prescription",
+          medications: prescriptions.map((medication, index) => ({
+            id: `draft-med-${index}`,
+            ...medication,
+          })),
+        },
+      ],
+      ...extendedFields,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    return [
+      {
+        specialty: specialty || {
+          id: "draft-specialty",
+          name: "Especialidad no especificada",
+        },
+        entries: [draftEntry],
+      },
+    ];
+  }, [
+    diagnosisResponse?.data,
+    diagnoses,
+    initialNote,
+    visitDate,
+    doctor,
+    chiefComplaint,
+    subjectiveNote,
+    objectiveNote,
+    assessment,
+    plan,
+    vitals,
+    prescriptions,
+    extendedFields,
+    specialty,
+  ]);
+
+  const handleHistoryPrint = useReactToPrint({
+    contentRef: historyPrintRef,
+    documentTitle: "historia_clinica",
+    pageStyle: `
+      @page {
+        size: A4;
+        margin: 10mm;
+      }
+      @media print {
+        body {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .no-print {
+          display: none !important;
+        }
+      }
+    `,
+  });
+
+  const handleHistoryPdfDownload = () => {
+    if (!historyPrintRef.current) return;
+
+    const patientName = `${currentPatient?.firstName || "paciente"}_${currentPatient?.lastName || ""}`
+      .trim()
+      .replace(/\s+/g, "_")
+      .toLowerCase();
+
+    html2pdf()
+      .set({
+        margin: [8, 8, 8, 8],
+        filename: `historia_clinica_${patientName || "paciente"}_${new Date().toISOString().split("T")[0]}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+        },
+        jsPDF: {
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait",
+        },
+        pagebreak: { mode: ["css", "legacy"] },
+      })
+      .from(historyPrintRef.current)
+      .save();
+  };
 
   useEffect(() => {
     if (patient && patientHistory?.id !== patient.id) {
@@ -268,12 +394,42 @@ const FormHistory = ({ patients = [], initialContext = null }) => {
         onNext={goNext}
         isPending={isPending}
         viewMode={viewMode}
+        onPreview={() => setShowHistoryPreview(true)}
+        previewDisabled={!currentPatient}
       />
+
+      <ClinicalHistoryPDFModal
+        isOpen={showHistoryPreview}
+        onClose={() => setShowHistoryPreview(false)}
+        onDownloadPdf={handleHistoryPdfDownload}
+        onPrint={() => {
+          setShowHistoryPreview(false);
+          setTimeout(() => handleHistoryPrint(), 120);
+        }}
+        title="Previsualización de Historia Clínica"
+        subtitle="Documento completo listo para exportar en PDF o imprimir"
+      >
+        <PrintableClinicalHistory
+          documentRef={historyPrintRef}
+          patient={currentPatient}
+          specialtyHistories={draftSpecialtyHistories}
+          generatedAt={new Date().toISOString()}
+          title="Historia Clínica (Borrador)"
+        />
+      </ClinicalHistoryPDFModal>
     </form>
   );
 };
 
-const FormActions = ({ step, onBack, onNext, isPending, viewMode }) => (
+const FormActions = ({
+  step,
+  onBack,
+  onNext,
+  isPending,
+  viewMode,
+  onPreview,
+  previewDisabled,
+}) => (
   <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6 border-t border-[var(--color-border)]">
     <div>
       {viewMode === "steps" && step > 1 && (
@@ -288,6 +444,14 @@ const FormActions = ({ step, onBack, onNext, isPending, viewMode }) => (
     </div>
 
     <div className="flex gap-3">
+      <button
+        type="button"
+        onClick={onPreview}
+        disabled={previewDisabled}
+        className="px-6 py-3 cursor-pointer rounded-xl border-2 border-blue-200 text-blue-700 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium"
+      >
+        🖨️ Previsualizar / Imprimir
+      </button>
       {viewMode === "steps" ? (
         step < 5 ? (
           <button
