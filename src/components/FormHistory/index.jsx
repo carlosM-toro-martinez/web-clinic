@@ -14,6 +14,7 @@ import { useReactToPrint } from "react-to-print";
 import html2pdf from "html2pdf.js";
 import PrintableClinicalHistory from "../medical-history/PrintableClinicalHistory";
 import ClinicalHistoryPDFModal from "../medical-history/ClinicalHistoryPDFModal";
+import { withHtml2PdfColorFallback } from "../../utils/pdfSanitizer";
 
 const FormHistory = ({ patients = [], initialContext = null }) => {
   const location = useLocation();
@@ -154,7 +155,8 @@ const FormHistory = ({ patients = [], initialContext = null }) => {
 
   const handleHistoryPrint = useReactToPrint({
     contentRef: historyPrintRef,
-    documentTitle: "historia_clinica",
+    documentTitle: "",
+    onAfterPrint: () => setShowHistoryPreview(false),
     pageStyle: `
       @page {
         size: A4;
@@ -185,11 +187,11 @@ const FormHistory = ({ patients = [], initialContext = null }) => {
         margin: [8, 8, 8, 8],
         filename: `historia_clinica_${patientName || "paciente"}_${new Date().toISOString().split("T")[0]}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
+        html2canvas: withHtml2PdfColorFallback({
           scale: 2,
           useCORS: true,
           letterRendering: true,
-        },
+        }),
         jsPDF: {
           unit: "mm",
           format: "a4",
@@ -402,10 +404,7 @@ const FormHistory = ({ patients = [], initialContext = null }) => {
         isOpen={showHistoryPreview}
         onClose={() => setShowHistoryPreview(false)}
         onDownloadPdf={handleHistoryPdfDownload}
-        onPrint={() => {
-          setShowHistoryPreview(false);
-          setTimeout(() => handleHistoryPrint(), 120);
-        }}
+        onPrint={handleHistoryPrint}
         title="Previsualización de Historia Clínica"
         subtitle="Documento completo listo para exportar en PDF o imprimir"
       >

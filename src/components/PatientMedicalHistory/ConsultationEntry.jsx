@@ -24,6 +24,7 @@ const ConsultationEntry = ({
 
   const handlePrint = useReactToPrint({
     contentRef: prescriptionRef,
+    documentTitle: "",
     pageStyle: `
       @page {
         size: carta;

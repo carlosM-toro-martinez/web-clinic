@@ -2,6 +2,7 @@ import React from "react";
 import PrescriptionPreview from "./PrescriptionPreview";
 import { useReactToPrint } from "react-to-print";
 import html2pdf from "html2pdf.js";
+import { withHtml2PdfColorFallback } from "../../utils/pdfSanitizer";
 
 const PrescriptionPDFModal = ({
   showPreview,
@@ -11,7 +12,8 @@ const PrescriptionPDFModal = ({
 }) => {
   const handlePrint = useReactToPrint({
     contentRef: prescriptionRef,
-    documentTitle: "Hola",
+    documentTitle: "",
+    onAfterPrint: () => setShowPreview(false),
     pageStyle: `
       @page {
         size: A5;
@@ -44,11 +46,11 @@ const PrescriptionPDFModal = ({
       margin: [15, 15],
       filename: `receta_medica_${new Date().toISOString().split("T")[0]}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
-      html2canvas: {
+      html2canvas: withHtml2PdfColorFallback({
         scale: 2,
         useCORS: true,
         letterRendering: true,
-      },
+      }),
       jsPDF: {
         unit: "mm",
         format: "a5",
@@ -108,8 +110,7 @@ const PrescriptionPDFModal = ({
             </button>
             <button
               onClick={() => {
-                setShowPreview(false);
-                setTimeout(() => handlePrint(), 100);
+                handlePrint();
               }}
               className="px-6 py-3 cursor-pointer bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2"
             >

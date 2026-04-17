@@ -17,6 +17,7 @@ const Step5Treatment = ({
 
   const handlePrint = useReactToPrint({
     contentRef: prescriptionRef,
+    documentTitle: "",
     pageStyle: `
       @page {
         size: carta;

@@ -30,7 +30,9 @@ const ClinicalHistoryPDFModal = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto bg-slate-100 p-4 md:p-6">{children}</div>
+        <div className="flex-1 overflow-y-auto bg-slate-100 p-4 md:p-6">
+          {children}
+        </div>
 
         <div className="px-6 py-4 border-t bg-slate-50 no-print">
           <div className="flex flex-col sm:flex-row justify-end gap-3">
@@ -41,13 +43,13 @@ const ClinicalHistoryPDFModal = ({
             >
               Cancelar
             </button>
-            <button
+            {/* <button
               type="button"
               onClick={onDownloadPdf}
               className="px-4 py-2.5 rounded-lg border border-blue-300 text-blue-700 hover:bg-blue-50 transition cursor-pointer font-semibold"
             >
               Exportar PDF
-            </button>
+            </button> */}
             <button
               type="button"
               onClick={onPrint}

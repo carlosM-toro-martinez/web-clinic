@@ -6,6 +6,7 @@ import { useReactToPrint } from "react-to-print";
 import html2pdf from "html2pdf.js";
 import PrintableClinicalHistory from "../medical-history/PrintableClinicalHistory";
 import ClinicalHistoryPDFModal from "../medical-history/ClinicalHistoryPDFModal";
+import { withHtml2PdfColorFallback } from "../../utils/pdfSanitizer";
 
 const PatientMedicalHistory = ({ medicalHistory }) => {
   const [activeSpecialty, setActiveSpecialty] = useState(null);
@@ -72,7 +73,8 @@ const PatientMedicalHistory = ({ medicalHistory }) => {
 
   const handleHistoryPrint = useReactToPrint({
     contentRef: historyPrintRef,
-    documentTitle: "historial_clinico_paciente",
+    documentTitle: "",
+    onAfterPrint: () => setShowHistoryPreview(false),
     pageStyle: `
       @page {
         size: A4;
@@ -103,11 +105,11 @@ const PatientMedicalHistory = ({ medicalHistory }) => {
         margin: [8, 8, 8, 8],
         filename: `historial_clinico_${patientName || "paciente"}_${new Date().toISOString().split("T")[0]}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
+        html2canvas: withHtml2PdfColorFallback({
           scale: 2,
           useCORS: true,
           letterRendering: true,
-        },
+        }),
         jsPDF: {
           unit: "mm",
           format: "a4",
@@ -183,14 +185,11 @@ const PatientMedicalHistory = ({ medicalHistory }) => {
         <ClinicalHistoryPDFModal
           isOpen={showHistoryPreview}
           onClose={() => setShowHistoryPreview(false)}
-          onDownloadPdf={handleHistoryPdfDownload}
-          onPrint={() => {
-            setShowHistoryPreview(false);
-            setTimeout(() => handleHistoryPrint(), 120);
-          }}
-          title="Previsualización del Historial Clínico"
-          subtitle="Documento completo del paciente listo para imprimir o exportar en PDF"
-        >
+        onDownloadPdf={handleHistoryPdfDownload}
+        onPrint={handleHistoryPrint}
+        title="Previsualización del Historial Clínico"
+        subtitle="Documento completo del paciente listo para imprimir o exportar en PDF"
+      >
           <PrintableClinicalHistory
             documentRef={historyPrintRef}
             patient={patient}
