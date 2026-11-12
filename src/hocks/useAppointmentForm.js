@@ -1,3 +1,4 @@
+import normalizeText from "../utils/normalizeText";
 import { useState, useMemo, useContext } from "react";
 import { MainContext } from "../context/MainContext";
 import useApiMutation from "./useApiMutation";
@@ -27,11 +28,12 @@ export const useAppointmentForm = (patients, specialties) => {
 
   const filteredPatients = useMemo(() => {
     return patients?.filter((p) => {
-      const term = formState.searchTerm?.toLowerCase();
+      const term = normalizeText(formState.searchTerm).trim();
       return (
-        p.firstName?.toLowerCase().includes(term) ||
-        p.lastName?.toLowerCase().includes(term) ||
-        (p.ciNumber && p.ciNumber?.toLowerCase().includes(term))
+        normalizeText(p.firstName).includes(term) ||
+        normalizeText(p.lastName).includes(term) ||
+        normalizeText(`${p.firstName ?? ""} ${p.lastName ?? ""}`).includes(term) ||
+        (p.ciNumber && normalizeText(p.ciNumber).includes(term))
       );
     });
   }, [formState.searchTerm, patients]);
@@ -73,7 +75,22 @@ export const useAppointmentForm = (patients, specialties) => {
     }
 
     const total = Number(selectedFee.amount);
-    const reserva = Number(reservationAmount);
+    const reserva = Number(reservationAmount || 0);
+
+    if (Number.isNaN(reserva) || reserva < 0) {
+      updateFormState({ localError: "El monto de reserva debe ser un número válido." });
+      return;
+    }
+    if (reserva > total) {
+      updateFormState({ localError: "El monto de reserva no puede ser mayor al total." });
+      return;
+    }
+    if (reserva > 0 && !cashRegister?.data?.id) {
+      updateFormState({
+        localError: "No hay una caja abierta. Abre la caja antes de registrar un cobro.",
+      });
+      return;
+    }
 
     const [startHour, startMinute] = selectedSchedule.startTime
       .split(":")

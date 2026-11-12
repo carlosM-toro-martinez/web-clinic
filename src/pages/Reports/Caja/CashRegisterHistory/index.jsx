@@ -76,11 +76,12 @@ const CashRegisterHistory = ({ cashRegisters, formatCurrency }) => {
                           : "text-red-600"
                       }`}
                     >
-                      {formatCurrency(
-                        parseFloat(
-                          register.closingAmount - register.openingAmount || 0
-                        )
-                      )}
+                      {register.closingAmount
+                        ? formatCurrency(
+                            parseFloat(register.closingAmount) -
+                              parseFloat(register.openingAmount || 0)
+                          )
+                        : "-"}
                     </span>
                   </td>
                 </tr>

@@ -1,3 +1,4 @@
+import normalizeText from "../../../utils/normalizeText";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
@@ -105,11 +106,11 @@ function CrearConsulta() {
   const appointments = appointmentsResponse?.data || [];
 
   const filteredPatients = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
+    const term = normalizeText(searchTerm).trim();
     if (!term) return patients.slice(0, 20);
     return patients.filter((p) => {
-      const fullName = `${p.firstName} ${p.lastName}`.toLowerCase();
-      const ci = (p.ciNumber || "").toLowerCase();
+      const fullName = normalizeText(`${p.firstName ?? ""} ${p.lastName ?? ""}`);
+      const ci = normalizeText(p.ciNumber);
       return fullName.includes(term) || ci.includes(term);
     });
   }, [patients, searchTerm]);
@@ -282,6 +283,10 @@ function CrearConsulta() {
     }
     if (reserva > total) {
       setLocalError("El monto de pago no puede ser mayor al total.");
+      return;
+    }
+    if (reserva > 0 && !cashRegister?.data?.id) {
+      setLocalError("No hay una caja abierta. Abre la caja antes de registrar un cobro.");
       return;
     }
 

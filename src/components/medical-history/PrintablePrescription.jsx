@@ -133,7 +133,7 @@ const PrintablePrescription = ({
           </div>
 
           <div>
-            F. Nacimiento: {formatBirthDate(patient?.birthDate) || "19/01/1981"}
+            F. Nacimiento: {formatBirthDate(patient?.birthDate) || "No especificada"}
           </div>
         </div>
 

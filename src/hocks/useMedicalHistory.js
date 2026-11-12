@@ -1,3 +1,4 @@
+import normalizeText from "../utils/normalizeText";
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useApiMutation from "./useApiMutation";
@@ -106,11 +107,11 @@ export const useMedicalHistory = (
     if (!patient?.birthDate) return "";
     const today = new Date();
     const birth = new Date(patient.birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
+    let age = today.getFullYear() - birth.getUTCFullYear();
+    const monthDiff = today.getMonth() - birth.getUTCMonth();
     if (
       monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birth.getDate())
+      (monthDiff === 0 && today.getDate() < birth.getUTCDate())
     ) {
       age--;
     }
@@ -118,13 +119,14 @@ export const useMedicalHistory = (
   }, [patient]);
 
   const filteredPatients = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
+    const term = normalizeText(searchTerm).trim();
     if (!term) return [];
     return patients.filter((p) => {
       return (
-        p.firstName.toLowerCase().includes(term) ||
-        p.lastName.toLowerCase().includes(term) ||
-        (p.ciNumber && p.ciNumber.toLowerCase().includes(term))
+        normalizeText(p.firstName).includes(term) ||
+        normalizeText(p.lastName).includes(term) ||
+        normalizeText(`${p.firstName ?? ""} ${p.lastName ?? ""}`).includes(term) ||
+        (p.ciNumber && normalizeText(p.ciNumber).includes(term))
       );
     });
   }, [searchTerm, patients]);

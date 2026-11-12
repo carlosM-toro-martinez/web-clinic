@@ -102,7 +102,7 @@ const FormHistory = ({ patients = [], initialContext = null }) => {
     });
 
     const draftEntry = {
-      id: "borrador",
+      id: "",
       note: initialNote,
       visitDate,
       doctor,
@@ -177,10 +177,11 @@ const FormHistory = ({ patients = [], initialContext = null }) => {
   const handleHistoryPdfDownload = () => {
     if (!historyPrintRef.current) return;
 
-    const patientName = `${currentPatient?.firstName || "paciente"}_${currentPatient?.lastName || ""}`
-      .trim()
-      .replace(/\s+/g, "_")
-      .toLowerCase();
+    const patientName =
+      `${currentPatient?.firstName || "paciente"}_${currentPatient?.lastName || ""}`
+        .trim()
+        .replace(/\s+/g, "_")
+        .toLowerCase();
 
     html2pdf()
       .set({
@@ -413,7 +414,7 @@ const FormHistory = ({ patients = [], initialContext = null }) => {
           patient={currentPatient}
           specialtyHistories={draftSpecialtyHistories}
           generatedAt={new Date().toISOString()}
-          title="Historia Clínica (Borrador)"
+          title="Historia Clínica"
         />
       </ClinicalHistoryPDFModal>
     </form>

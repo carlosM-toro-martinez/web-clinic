@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 
+// Montos siempre con 2 decimales (evita 454.95000000000005 y pérdida de centavos)
+const money = (value) => (Number(value) || 0).toFixed(2);
+
 export default function CajaResumenComponent({ lastCash }) {
   const [activeTab, setActiveTab] = useState("caja");
 
@@ -51,7 +54,7 @@ export default function CajaResumenComponent({ lastCash }) {
                 Monto actual
               </p>
               <p className="text-3xl font-bold text-green-500">
-                Bs{parseFloat(lastCash?.actualAmount || 0).toFixed(1)}
+                Bs{money(lastCash?.actualAmount)}
               </p>
             </div>
             <div className="card">
@@ -59,7 +62,7 @@ export default function CajaResumenComponent({ lastCash }) {
                 Monto de apertura
               </p>
               <p className="text-3xl font-bold text-red-500">
-                Bs{lastCash?.openingAmount}
+                Bs{money(lastCash?.openingAmount)}
               </p>
             </div>
             <div className="card">
@@ -67,7 +70,7 @@ export default function CajaResumenComponent({ lastCash }) {
                 Diferencia
               </p>
               <p className="text-3xl font-bold">
-                Bs{lastCash?.actualAmount - lastCash?.openingAmount}
+                Bs{money(Number(lastCash?.actualAmount || 0) - Number(lastCash?.openingAmount || 0))}
               </p>
             </div>
           </div>
@@ -77,11 +80,11 @@ export default function CajaResumenComponent({ lastCash }) {
               <p className="text-base text-[var(--text-muted)] mb-2">
                 Ingresos
               </p>
-              <p className="text-3xl font-bold text-green-500">Bs{ingresos}</p>
+              <p className="text-3xl font-bold text-green-500">Bs{money(ingresos)}</p>
             </div>
             <div className="card">
               <p className="text-base text-[var(--text-muted)] mb-2">Egresos</p>
-              <p className="text-3xl font-bold text-red-500">Bs{egresos}</p>
+              <p className="text-3xl font-bold text-red-500">Bs{money(egresos)}</p>
             </div>
             <div className="card">
               <p className="text-base text-[var(--text-muted)] mb-2">Balance</p>
@@ -90,7 +93,7 @@ export default function CajaResumenComponent({ lastCash }) {
                   balance >= 0 ? "text-green-500" : "text-red-500"
                 }`}
               >
-                Bs{balance}
+                Bs{money(balance)}
               </p>
             </div>
           </div>

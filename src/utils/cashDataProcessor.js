@@ -8,7 +8,8 @@ export const processCashData = (cashData, selectedDate) => {
   // Extraer todos los movimientos
   cashRegisters.forEach((register) => {
     if (register.movements && register.movements.length > 0) {
-      register.movements.forEach((movement) => {
+      // El movimiento automático "CIERRE DE CAJA" es un asiento contable, no un ingreso real
+      register.movements.filter((m) => !String(m.description ?? "").startsWith("CIERRE DE CAJA")).forEach((movement) => {
         const movementDate = new Date(movement.createdAt);
         // Ajustar para zona horaria local
         const localDate = new Date(

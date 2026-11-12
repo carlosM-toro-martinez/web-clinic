@@ -7,7 +7,7 @@ import { MainContext } from "../../context/MainContext";
 
 export default function FormMovementComponent({ cashRegisterId }) {
   const navigate = useNavigate();
-  const { user, refetchCaja } = useContext(MainContext);
+  const { user, refetchCaja, cashRegister } = useContext(MainContext);
   const [localError, setLocalError] = useState("");
 
   const [form, setForm] = useState({
@@ -61,9 +61,16 @@ export default function FormMovementComponent({ cashRegisterId }) {
 
     if (!validateForm()) return;
 
+    // Si se recargó la página se pierde el estado de navegación: usar la caja abierta del contexto
+    const effectiveCashRegisterId = cashRegisterId ?? cashRegister?.data?.id;
+    if (!effectiveCashRegisterId) {
+      setLocalError("No hay una caja abierta. Abre la caja antes de registrar movimientos.");
+      return;
+    }
+
     mutate({
       userId: user?.id,
-      cashRegisterId,
+      cashRegisterId: effectiveCashRegisterId,
       type: form.type,
       amount: form.amount,
       description: form.description.trim(),

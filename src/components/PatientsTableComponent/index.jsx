@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MoreVertical } from "lucide-react";
 import toTitleCase from "../../utils/toTitleCase";
+import normalizeText from "../../utils/normalizeText";
 
 export default function PatientsTable({ patients, onDeactivate }) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -13,9 +14,9 @@ export default function PatientsTable({ patients, onDeactivate }) {
 
   const filteredPatients = useMemo(() => {
     return patients.filter((p) => {
-      const fullName = `${p.firstName ?? ""} ${p.lastName ?? ""}`.toLowerCase();
-      const ci = (p.ciNumber ?? "").toLowerCase();
-      const term = (searchTerm ?? "").toLowerCase();
+      const fullName = normalizeText(`${p.firstName ?? ""} ${p.lastName ?? ""}`);
+      const ci = normalizeText(p.ciNumber);
+      const term = normalizeText(searchTerm).trim();
       const matchesSearch = fullName.includes(term) || ci.includes(term);
 
       const matchesGender =
@@ -135,7 +136,7 @@ export default function PatientsTable({ patients, onDeactivate }) {
                   key={p.id}
                   className="border-t border-[var(--color-border)] hover:bg-[var(--color-hover-light)] transition relative"
                 >
-                  <td className="p-4 text-[color:var(--color-text-primary)] font-medium">
+                  <td className="p-4 text-[color:var(--color-text-primary)] font-medium break-words max-w-[260px]">
                     {toTitleCase(p?.firstName ? p?.firstName : "")}{" "}
                     {toTitleCase(p.lastName ? p.lastName : "")}
                   </td>

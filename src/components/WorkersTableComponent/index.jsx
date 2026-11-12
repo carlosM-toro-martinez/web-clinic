@@ -1,3 +1,4 @@
+import normalizeText from "../../utils/normalizeText";
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MoreVertical } from "lucide-react";
@@ -11,12 +12,11 @@ export default function WorkersTable({ workers }) {
 
   const filteredWorkers = useMemo(() => {
     return workers.filter((w) => {
-      const fullName = `${w.firstName} ${w.lastName}`.toLowerCase();
-      const email = w.email.toLowerCase();
+      const fullName = normalizeText(`${w.firstName ?? ""} ${w.lastName ?? ""}`);
+      const email = normalizeText(w.email);
+      const term = normalizeText(searchTerm).trim();
 
-      const matchesSearch =
-        fullName.includes(searchTerm.toLowerCase()) ||
-        email.includes(searchTerm.toLowerCase());
+      const matchesSearch = fullName.includes(term) || email.includes(term);
 
       const matchesRole = roleFilter === "Todos" || w.role === roleFilter;
 

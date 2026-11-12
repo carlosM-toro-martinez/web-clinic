@@ -20,6 +20,7 @@ const PatientMedicalHistory = ({ medicalHistory }) => {
       year: "numeric",
       month: "long",
       day: "numeric",
+      timeZone: "UTC",
     });
   };
 
@@ -27,12 +28,12 @@ const PatientMedicalHistory = ({ medicalHistory }) => {
     if (!birthDate) return "";
     const today = new Date();
     const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
+    let age = today.getFullYear() - birth.getUTCFullYear();
+    const monthDiff = today.getMonth() - birth.getUTCMonth();
 
     if (
       monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birth.getDate())
+      (monthDiff === 0 && today.getDate() < birth.getUTCDate())
     ) {
       age--;
     }
