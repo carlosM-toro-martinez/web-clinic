@@ -22,7 +22,7 @@ export const useWhatsappChats = () => {
   const sortedChats = useMemo(() => {
     if (!data || !Array.isArray(data?.data)) return [];
 
-    return [...data?.data]
+    return [...data.data]
       .map((chat) => {
         return {
           ...chat,

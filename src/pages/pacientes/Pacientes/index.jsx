@@ -1,12 +1,34 @@
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useContext } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { MainContext } from "../../../context/MainContext";
+import patientDeactivateService from "../../../async/services/patch/patientDeactivateService";
 import LayoutComponent from "../../../components/LayoutComponent";
 import PatientsTable from "../../../components/PatientsTableComponent";
 import pacientesService from "../../../async/services/get/pacientesService";
 
 function Pacientes() {
   const navigate = useNavigate();
+  const { token } = useContext(MainContext);
+
+  const deactivateMutation = useMutation({
+    mutationFn: (patientId) => patientDeactivateService(patientId, token),
+    onSuccess: async () => {
+      await refetch();
+      window.alert("El paciente fue dado de baja correctamente.");
+    },
+    onError: (error) => {
+      if (error === 401 || error === 403) {
+        window.alert("No tienes permisos o tu sesión expiró.");
+        return;
+      }
+      if (error === 404) {
+        window.alert("No se encontró el paciente.");
+        return;
+      }
+      window.alert("No se pudo dar de baja al paciente. Intenta nuevamente.");
+    },
+  });
 
   const {
     data: response,
@@ -56,7 +78,10 @@ function Pacientes() {
         </button>
       </div>
 
-      <PatientsTable patients={patients} />
+      <PatientsTable
+        patients={patients}
+        onDeactivate={(patient) => deactivateMutation.mutate(patient.id)}
+      />
     </LayoutComponent>
   );
 }

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { MoreVertical } from "lucide-react";
 import toTitleCase from "../../utils/toTitleCase";
 
-export default function PatientsTable({ patients }) {
+export default function PatientsTable({ patients, onDeactivate }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [genderFilter, setGenderFilter] = useState("Todos");
   const [insuranceFilter, setInsuranceFilter] = useState("Todos");
@@ -43,6 +43,18 @@ export default function PatientsTable({ patients }) {
 
   const handleHistory = (patient) => {
     navigate(`/pacientes/${patient.id}/historia`);
+  };
+
+  const handleDeactivate = (patient) => {
+    setMenuOpen(null);
+    const name = `${patient.firstName ?? ""} ${patient.lastName ?? ""}`.trim();
+    if (
+      window.confirm(
+        `¿Dar de baja a ${name}? El paciente dejará de aparecer en la lista.`,
+      )
+    ) {
+      onDeactivate?.(patient);
+    }
   };
 
   const handleAppointments = (patient) => {
@@ -188,6 +200,14 @@ export default function PatientsTable({ patients }) {
                         >
                           Citas
                         </button>
+                        {onDeactivate && (
+                          <button
+                            onClick={() => handleDeactivate(p)}
+                            className="block cursor-pointer w-full text-left px-4 py-2 hover:bg-[var(--color-hover-light)] text-red-600"
+                          >
+                            Dar de baja
+                          </button>
+                        )}
                       </div>
                     )}
                   </td>

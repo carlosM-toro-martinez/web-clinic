@@ -19,7 +19,7 @@ function Citas() {
     error: errorAppointments,
     refetch: refetchAppointments,
   } = useQuery({
-    queryKey: ["pacientes"],
+    queryKey: ["appointments"],
     queryFn: appointmentsService,
   });
 
@@ -59,7 +59,7 @@ function Citas() {
 
   if (isError) {
     const errorMessage =
-      errorPacientes?.message ||
+      errorAppointments?.message ||
       errorDoctors?.message ||
       errorSpecialties?.message ||
       "Error al cargar los datos necesarios";
