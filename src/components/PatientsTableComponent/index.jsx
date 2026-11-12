@@ -13,11 +13,10 @@ export default function PatientsTable({ patients }) {
 
   const filteredPatients = useMemo(() => {
     return patients.filter((p) => {
-      const fullName = `${p.firstName} ${p.lastName}`?.toLowerCase();
-      const ci = p.ciNumber?.toLowerCase();
-      const matchesSearch =
-        fullName.includes(searchTerm?.toLowerCase()) ||
-        ci.includes(searchTerm?.toLowerCase());
+      const fullName = `${p.firstName ?? ""} ${p.lastName ?? ""}`.toLowerCase();
+      const ci = (p.ciNumber ?? "").toLowerCase();
+      const term = (searchTerm ?? "").toLowerCase();
+      const matchesSearch = fullName.includes(term) || ci.includes(term);
 
       const matchesGender =
         genderFilter === "Todos" || p.gender === genderFilter;
